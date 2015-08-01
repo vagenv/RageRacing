@@ -5,12 +5,12 @@
 
 
 UCLASS(config = Game)
-class ARageHud : public AHUD
+class ARageHUD : public AHUD
 {
 	GENERATED_BODY()
 
 public:
-	ARageHud();
+	ARageHUD();
 
 	/** Font used to render the vehicle info */
 	UPROPERTY()

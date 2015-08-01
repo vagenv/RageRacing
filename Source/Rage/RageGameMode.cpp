@@ -2,11 +2,11 @@
 
 #include "Rage.h"
 #include "RageGameMode.h"
-#include "RagePawn.h"
+#include "RageBaseCar.h"
 #include "RageHud.h"
 
 ARageGameMode::ARageGameMode()
 {
-	DefaultPawnClass = ARagePawn::StaticClass();
-	HUDClass = ARageHud::StaticClass();
+	DefaultPawnClass = ARageBaseCar::StaticClass();
+	HUDClass = ARageHUD::StaticClass();
 }

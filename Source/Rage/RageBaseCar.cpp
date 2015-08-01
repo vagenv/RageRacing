@@ -1,7 +1,7 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
 
 #include "Rage.h"
-#include "RagePawn.h"
+#include "RageBaseCar.h"
 #include "RageWheelFront.h"
 #include "RageWheelRear.h"
 #include "RageHud.h"
@@ -22,13 +22,13 @@
 #include "IHeadMountedDisplay.h"
 #endif // HMD_INTGERATION
 
-const FName ARagePawn::LookUpBinding("LookUp");
-const FName ARagePawn::LookRightBinding("LookRight");
-const FName ARagePawn::EngineAudioRPM("RPM");
+const FName ARageBaseCar::LookUpBinding("LookUp");
+const FName ARageBaseCar::LookRightBinding("LookRight");
+const FName ARageBaseCar::EngineAudioRPM("RPM");
 
 #define LOCTEXT_NAMESPACE "VehiclePawn"
 
-ARagePawn::ARagePawn()
+ARageBaseCar::ARageBaseCar()
 {
 	// Car mesh
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> CarMesh(TEXT("/Game/VehicleAdv/Vehicle/Vehicle_SkelMesh.Vehicle_SkelMesh"));
@@ -167,50 +167,50 @@ ARagePawn::ARagePawn()
 	bInReverseGear = false;
 }
 
-void ARagePawn::SetupPlayerInputComponent(class UInputComponent* InputComponent)
+void ARageBaseCar::SetupPlayerInputComponent(class UInputComponent* InputComponent)
 {
 	// set up gameplay key bindings
 	check(InputComponent);
 
-	InputComponent->BindAxis("MoveForward", this, &ARagePawn::MoveForward);
-	InputComponent->BindAxis("MoveRight", this, &ARagePawn::MoveRight);
+	InputComponent->BindAxis("MoveForward", this, &ARageBaseCar::MoveForward);
+	InputComponent->BindAxis("MoveRight", this, &ARageBaseCar::MoveRight);
 	InputComponent->BindAxis(LookUpBinding);
 	InputComponent->BindAxis(LookRightBinding);
 
-	InputComponent->BindAction("Handbrake", IE_Pressed, this, &ARagePawn::OnHandbrakePressed);
-	InputComponent->BindAction("Handbrake", IE_Released, this, &ARagePawn::OnHandbrakeReleased);
-	InputComponent->BindAction("SwitchCamera", IE_Pressed, this, &ARagePawn::OnToggleCamera);
+	InputComponent->BindAction("Handbrake", IE_Pressed, this, &ARageBaseCar::OnHandbrakePressed);
+	InputComponent->BindAction("Handbrake", IE_Released, this, &ARageBaseCar::OnHandbrakeReleased);
+	InputComponent->BindAction("SwitchCamera", IE_Pressed, this, &ARageBaseCar::OnToggleCamera);
 
-	InputComponent->BindAction("ResetVR", IE_Pressed, this, &ARagePawn::OnResetVR); 
+	InputComponent->BindAction("ResetVR", IE_Pressed, this, &ARageBaseCar::OnResetVR);
 }
 
-void ARagePawn::MoveForward(float Val)
+void ARageBaseCar::MoveForward(float Val)
 {
 	GetVehicleMovementComponent()->SetThrottleInput(Val);
 
 }
 
-void ARagePawn::MoveRight(float Val)
+void ARageBaseCar::MoveRight(float Val)
 {
 	GetVehicleMovementComponent()->SetSteeringInput(Val);
 }
 
-void ARagePawn::OnHandbrakePressed()
+void ARageBaseCar::OnHandbrakePressed()
 {
 	GetVehicleMovementComponent()->SetHandbrakeInput(true);
 }
 
-void ARagePawn::OnHandbrakeReleased()
+void ARageBaseCar::OnHandbrakeReleased()
 {
 	GetVehicleMovementComponent()->SetHandbrakeInput(false);
 }
 
-void ARagePawn::OnToggleCamera()
+void ARageBaseCar::OnToggleCamera()
 {
 	EnableIncarView(!bInCarCameraActive);
 }
 
-void ARagePawn::EnableIncarView(const bool bState)
+void ARageBaseCar::EnableIncarView(const bool bState)
 {
 	if (bState != bInCarCameraActive)
 	{
@@ -239,7 +239,7 @@ void ARagePawn::EnableIncarView(const bool bState)
 	}
 }
 
-void ARagePawn::Tick(float Delta)
+void ARageBaseCar::Tick(float Delta)
 {
 	// Setup the flag to say we are in reverse gear
 	bInReverseGear = GetVehicleMovement()->GetCurrentGear() < 0;
@@ -276,7 +276,7 @@ void ARagePawn::Tick(float Delta)
 	EngineSoundComponent->SetFloatParameter(EngineAudioRPM, GetVehicleMovement()->GetEngineRotationSpeed()*RPMToAudioScale);
 }
 
-void ARagePawn::BeginPlay()
+void ARageBaseCar::BeginPlay()
 {
 	bool bWantInCar = false;
 	// First disable both speed/gear displays
@@ -294,7 +294,7 @@ void ARagePawn::BeginPlay()
 	EngineSoundComponent->Play();
 }
 
-void ARagePawn::OnResetVR()
+void ARageBaseCar::OnResetVR()
 {
 #ifdef HMD_INTGERATION
 	if (GEngine->HMDDevice.IsValid())
@@ -306,7 +306,7 @@ void ARagePawn::OnResetVR()
 #endif // HMD_INTGERATION
 }
 
-void ARagePawn::UpdateHUDStrings()
+void ARageBaseCar::UpdateHUDStrings()
 {
 	float KPH = FMath::Abs(GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
 	int32 KPH_int = FMath::FloorToInt(KPH);
@@ -325,7 +325,7 @@ void ARagePawn::UpdateHUDStrings()
 	}	
 }
 
-void ARagePawn::SetupInCarHUD()
+void ARageBaseCar::SetupInCarHUD()
 {
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if ((PlayerController != nullptr) && (InCarSpeed != nullptr) && (InCarGear != nullptr))
@@ -345,7 +345,7 @@ void ARagePawn::SetupInCarHUD()
 	}
 }
 
-void ARagePawn::UpdatePhysicsMaterial()
+void ARageBaseCar::UpdatePhysicsMaterial()
 {
 	if (GetActorUpVector().Z < 0)
 	{

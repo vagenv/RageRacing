@@ -2,7 +2,7 @@
 
 #include "Rage.h"
 #include "RageHud.h"
-#include "RagePawn.h"
+#include "RageBaseCar.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "CanvasItem.h"
@@ -15,13 +15,13 @@
 
 #define LOCTEXT_NAMESPACE "VehicleHUD"
 
-ARageHud::ARageHud()
+ARageHUD::ARageHUD()
 {
 	static ConstructorHelpers::FObjectFinder<UFont> Font(TEXT("/Engine/EngineFonts/RobotoDistanceField"));
 	HUDFont = Font.Object;
 }
 
-void ARageHud::DrawHUD()
+void ARageHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
@@ -41,7 +41,7 @@ void ARageHud::DrawHUD()
 	if( bHMDDeviceActive == false )
 	{
 		// Get our vehicle so we can check if we are in car. If we are we don't want onscreen HUD
-		ARagePawn* Vehicle = Cast<ARagePawn>(GetOwningPawn());
+		ARageBaseCar* Vehicle = Cast<ARageBaseCar>(GetOwningPawn());
 		if ((Vehicle != nullptr) && (Vehicle->bInCarCameraActive == false))
 		{
 			FVector2D ScaleVec(HUDYRatio * 1.4f, HUDYRatio * 1.4f);

@@ -1,7 +1,7 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
 #pragma once
 #include "GameFramework/WheeledVehicle.h"
-#include "RagePawn.generated.h"
+#include "RageBaseCar.generated.h"
 
 class UPhysicalMaterial;
 class UCameraComponent;
@@ -10,7 +10,7 @@ class UTextRenderComponent;
 class UInputComponent;
 
 UCLASS(config=Game)
-class ARagePawn : public AWheeledVehicle
+class ARageBaseCar : public AWheeledVehicle
 {
 	GENERATED_BODY()
 
@@ -39,7 +39,7 @@ class ARagePawn : public AWheeledVehicle
 	UAudioComponent* EngineSoundComponent;
 
 public:
-	ARagePawn();
+	ARageBaseCar();
 
 	/** The current speed as a string eg 10 km/h */
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
