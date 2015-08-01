@@ -241,6 +241,8 @@ void ARageBaseCar::EnableIncarView(const bool bState)
 
 void ARageBaseCar::Tick(float Delta)
 {
+
+	Super::Tick(Delta);
 	// Setup the flag to say we are in reverse gear
 	bInReverseGear = GetVehicleMovement()->GetCurrentGear() < 0;
 	
