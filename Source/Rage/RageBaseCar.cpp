@@ -165,6 +165,9 @@ ARageBaseCar::ARageBaseCar()
 
 	bIsLowFriction = false;
 	bInReverseGear = false;
+
+
+
 }
 
 void ARageBaseCar::SetupPlayerInputComponent(class UInputComponent* InputComponent)
