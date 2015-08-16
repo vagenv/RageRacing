@@ -80,6 +80,9 @@ ARageBaseCar::ARageBaseCar()
 	Vehicle4W->EngineSetup.TorqueCurve.GetRichCurve()->AddKey(0.0f, 400.0f);
 	Vehicle4W->EngineSetup.TorqueCurve.GetRichCurve()->AddKey(1890.0f, 500.0f);
 	Vehicle4W->EngineSetup.TorqueCurve.GetRichCurve()->AddKey(5730.0f, 400.0f);
+
+
+
  
 	// Adjust the steering 
 	Vehicle4W->SteeringCurve.GetRichCurve()->Reset();
