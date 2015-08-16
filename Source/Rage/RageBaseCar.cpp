@@ -167,7 +167,6 @@ ARageBaseCar::ARageBaseCar()
 	bInReverseGear = false;
 
 
-
 }
 
 void ARageBaseCar::SetupPlayerInputComponent(class UInputComponent* InputComponent)
