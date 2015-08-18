@@ -7,6 +7,6 @@
 
 ARageGameMode::ARageGameMode()
 {
-	DefaultPawnClass = ARageBaseCar::StaticClass();
-	HUDClass = ARageHUD::StaticClass();
+	//DefaultPawnClass = ARageBaseCar::StaticClass();
+	//HUDClass = ARageHUD::StaticClass();
 }

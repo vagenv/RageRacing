@@ -12,12 +12,7 @@ class ARageHUD : public AHUD
 public:
 	ARageHUD();
 
-	/** Font used to render the vehicle info */
-	UPROPERTY()
-	UFont* HUDFont;
 
-	// Begin AHUD interface
-	virtual void DrawHUD() override;
-	// End AHUD interface
+	class ARageBaseCar* GetCar();
 
 };
