@@ -178,11 +178,51 @@ void ARageBaseCar::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAxis(LookUpBinding);
 	InputComponent->BindAxis(LookRightBinding);
 
+
+	InputComponent->BindAction("Action", IE_Pressed, this, &ARageBaseCar::PreAction);
+	InputComponent->BindAction("AltAction", IE_Pressed, this, &ARageBaseCar::PreAltAction);
+	InputComponent->BindAction("Boost", IE_Pressed, this, &ARageBaseCar::PreBoost);
+
 	InputComponent->BindAction("Handbrake", IE_Pressed, this, &ARageBaseCar::OnHandbrakePressed);
 	InputComponent->BindAction("Handbrake", IE_Released, this, &ARageBaseCar::OnHandbrakeReleased);
 	InputComponent->BindAction("SwitchCamera", IE_Pressed, this, &ARageBaseCar::OnToggleCamera);
 
 }
+
+void ARageBaseCar::PreAction()
+{
+
+}
+
+void ARageBaseCar::Action()
+{
+
+}
+
+void ARageBaseCar::PreAltAction()
+{
+
+}
+void ARageBaseCar::AltAction()
+{
+
+}
+void ARageBaseCar::PreBoost()
+{
+
+}
+void ARageBaseCar::Boost()
+{
+
+}
+
+bool ARageBaseCar::CanBoost()
+{
+	return true;
+}
+
+
+
 
 void ARageBaseCar::MoveForward(float Val)
 {

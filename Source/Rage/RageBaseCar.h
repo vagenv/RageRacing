@@ -14,6 +14,8 @@ class ARageBaseCar : public AWheeledVehicle
 {
 	GENERATED_BODY()
 
+	/// Main Components
+
 	/** Spring arm that will offset the camera */
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* SpringArm;
@@ -40,6 +42,54 @@ class ARageBaseCar : public AWheeledVehicle
 
 public:
 	ARageBaseCar();
+
+
+	// Binding
+	void PreAction();
+	void PreAltAction();
+	void PreBoost();
+
+
+	// Callabale action Events
+	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+		void BP_PreAction();
+	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+		void BP_Action();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+		void BP_PreAltAction();
+	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+		void BP_AltAction();
+
+
+	bool CanBoost();
+
+
+private:
+
+
+	// Internal Action Event
+	void Action();
+	void AltAction();
+	void Boost();
+
+
+
+public:
+
+
+	/*
+
+	UFUNCTION(BlueprintImplementableEvent, Category = " ")
+
+	UFUNCTION(BlueprintCallable, Category = " ")
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = " ")
+	
+	*/
+
+
+	///////////                                                                        Legacy part
 
 	/** The current speed as a string eg 10 km/h */
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
