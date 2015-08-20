@@ -8,6 +8,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UTextRenderComponent;
 class UInputComponent;
+class UActionComponent;
 
 UCLASS(config=Game)
 class ARageBaseCar : public AWheeledVehicle
@@ -28,54 +29,22 @@ class ARageBaseCar : public AWheeledVehicle
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* InternalCamera;
 
-	/** Text component for the In-Car speed */
-	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UTextRenderComponent* InCarSpeed;
-
-	/** Text component for the In-Car gear */
-	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	UTextRenderComponent* InCarGear;
 
 	/** Audio component for the engine sound */
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UAudioComponent* EngineSoundComponent;
 
+	/** Audio component for the engine sound */
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		UActionComponent* TheActionComponent;
+
+
 public:
 	ARageBaseCar();
 
-
-	// Binding
-	void PreAction();
-	void PreAltAction();
-	void PreBoost();
-
-
-	// Callabale action Events
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_PreAction();
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_Action();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_PreAltAction();
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_AltAction();
-
-
-	bool CanBoost();
-
-
-private:
-
-
-	// Internal Action Event
-	void Action();
-	void AltAction();
-	void Boost();
-
-
-
-public:
+	virtual void InputAction();
+	virtual void InputAltAction();
+	virtual void InputBoost();
 
 
 	/*
@@ -128,37 +97,35 @@ public:
 	// End Actor interface
 
 	/** Handle pressing forwards */
-	void MoveForward(float Val);
+	virtual void MoveForward(float Val);
 
-	/** Setup the strings used on the hud */
-	void SetupInCarHUD();
+
 
 	/** Update the physics material used by the vehicle mesh */
-	void UpdatePhysicsMaterial();
+	virtual void UpdatePhysicsMaterial();
 
 	/** Handle pressing right */
-	void MoveRight(float Val);
+	virtual void MoveRight(float Val);
 	/** Handle handbrake pressed */
 	void OnHandbrakePressed();
 	/** Handle handbrake released */
 	void OnHandbrakeReleased();
 	/** Switch between cameras */
-	void OnToggleCamera();
+	virtual void OnToggleCamera();
 
 	static const FName LookUpBinding;
 	static const FName LookRightBinding;
 	static const FName EngineAudioRPM;
 
-private:
-	/** 
-	 * Activate In-Car camera. Enable camera and sets visibility of incar hud display
-	 *
-	 * @param	bState true will enable in car view and set visibility of various
-	 */
-	void EnableIncarView( const bool bState );
 
-	/** Update the gear and speed strings */
-	void UpdateHUDStrings();
+	/**
+	* Activate In-Car camera. Enable camera and sets visibility of incar hud display
+	*
+	* @param	bState true will enable in car view and set visibility of various
+	*/
+	virtual void EnableIncarView(const bool bState);
+
+
 
 	/* Are we on a 'slippery' surface */
 	bool bIsLowFriction;
@@ -170,15 +137,15 @@ private:
 
 public:
 	/** Returns SpringArm subobject **/
-	FORCEINLINE USpringArmComponent* GetSpringArm() const { return SpringArm; }
+	FORCEINLINE virtual USpringArmComponent* GetSpringArm() const { return SpringArm; }
 	/** Returns Camera subobject **/
-	FORCEINLINE UCameraComponent* GetCamera() const { return Camera; }
+	FORCEINLINE virtual UCameraComponent* GetCamera() const { return Camera; }
 	/** Returns InternalCamera subobject **/
-	FORCEINLINE UCameraComponent* GetInternalCamera() const { return InternalCamera; }
-	/** Returns InCarSpeed subobject **/
-	FORCEINLINE UTextRenderComponent* GetInCarSpeed() const { return InCarSpeed; }
-	/** Returns InCarGear subobject **/
-	FORCEINLINE UTextRenderComponent* GetInCarGear() const { return InCarGear; }
+	FORCEINLINE virtual UCameraComponent* GetInternalCamera() const { return InternalCamera; }
 	/** Returns EngineSoundComponent subobject **/
-	FORCEINLINE UAudioComponent* GetEngineSoundComponent() const { return EngineSoundComponent; }
+	FORCEINLINE virtual UAudioComponent* GetEngineSoundComponent() const { return EngineSoundComponent; }
+
+	FORCEINLINE virtual UActionComponent* GetActionComponent() const { return TheActionComponent; }
+
+
 };
