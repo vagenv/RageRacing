@@ -34,17 +34,25 @@ class ARageBaseCar : public AWheeledVehicle
 	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UAudioComponent* EngineSoundComponent;
 
-	/** Audio component for the engine sound */
-	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-		UActionComponent* TheActionComponent;
+	/*
 
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		UStaticMeshComponent* MainWeaponMeshComponent;
+
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		UStaticMeshComponent* AltWeaponMeshComponent;
+
+		*/
 
 public:
 	ARageBaseCar();
 
-	virtual void InputAction();
-	virtual void InputAltAction();
-	virtual void InputBoost();
+	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
+		UActionComponent* TheActionComponent;
+
+
+
+
 
 
 	/*

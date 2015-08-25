@@ -14,7 +14,7 @@
 #include "Vehicles/WheeledVehicleMovementComponent4W.h"
 #include "Engine/SkeletalMesh.h"
 #include "ActionComponent.h"
-
+#include "Weapon.h"
 
 
 const FName ARageBaseCar::LookUpBinding("LookUp");
@@ -63,7 +63,28 @@ ARageBaseCar::ARageBaseCar()
 	EngineSoundComponent->AttachTo(GetMesh());
 
 	TheActionComponent = CreateDefaultSubobject<UActionComponent>(TEXT("Action Component"));
-	TheActionComponent->TheCar = this;
+
+	/*
+	MainWeaponMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponStaticMesh"));
+	AltWeaponMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WeaponStaticMesh"));
+
+	*/
+
+	if (TheActionComponent)
+	{
+		/*
+		if (MainWeaponMeshComponent && TheActionComponent->MainWeapon && TheActionComponent->MainWeapon->TheStaticMeshComponent
+			&& TheActionComponent->MainWeapon->TheStaticMeshComponent->StaticMesh)
+			MainWeaponMeshComponent->SetStaticMesh(TheActionComponent->MainWeapon->TheStaticMeshComponent->StaticMesh);
+
+		if (AltWeaponMeshComponent && TheActionComponent->AltWeapon && TheActionComponent->AltWeapon->TheStaticMeshComponent
+			&& TheActionComponent->AltWeapon->TheStaticMeshComponent->StaticMesh)
+			AltWeaponMeshComponent->SetStaticMesh(TheActionComponent->MainWeapon->TheStaticMeshComponent->StaticMesh);
+
+			*/
+
+	}
+
 
 }
 
@@ -76,30 +97,25 @@ void ARageBaseCar::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAxis("MoveRight", this, &ARageBaseCar::MoveRight);
 	InputComponent->BindAxis(LookUpBinding);
 	InputComponent->BindAxis(LookRightBinding);
-
-
-	InputComponent->BindAction("Action", IE_Pressed, this, &ARageBaseCar::InputAction);
-	InputComponent->BindAction("AltAction", IE_Pressed, this, &ARageBaseCar::InputAltAction);
-	InputComponent->BindAction("Boost", IE_Pressed, this, &ARageBaseCar::InputBoost);
-
 	InputComponent->BindAction("Handbrake", IE_Pressed, this, &ARageBaseCar::OnHandbrakePressed);
 	InputComponent->BindAction("Handbrake", IE_Released, this, &ARageBaseCar::OnHandbrakeReleased);
 	InputComponent->BindAction("SwitchCamera", IE_Pressed, this, &ARageBaseCar::OnToggleCamera);
 
-}
 
-void ARageBaseCar::InputAction(){
-	if (TheActionComponent)TheActionComponent->PreAction();
-}
 
-void ARageBaseCar::InputAltAction(){
-	if (TheActionComponent)TheActionComponent->PreAltAction();
-}
+	if (!TheActionComponent)return;
+	InputComponent->BindAction("Action", IE_Pressed, TheActionComponent, &UActionComponent::ActionDown);
+	InputComponent->BindAction("Action", IE_Released, TheActionComponent, &UActionComponent::ActionUp);
 
-void ARageBaseCar::InputBoost(){
-	if (TheActionComponent)TheActionComponent->PreBoost();
-}
+	InputComponent->BindAction("AltAction", IE_Pressed, TheActionComponent, &UActionComponent::AltActionDown);
+	InputComponent->BindAction("AltAction", IE_Released, TheActionComponent, &UActionComponent::AltActionUp);
 
+	InputComponent->BindAction("Boost", IE_Pressed, TheActionComponent, &UActionComponent::BoostDown);
+	InputComponent->BindAction("Boost", IE_Released, TheActionComponent, &UActionComponent::BoostUp);
+
+
+
+}
 
 
 
@@ -172,6 +188,7 @@ void ARageBaseCar::Tick(float Delta)
 
 void ARageBaseCar::BeginPlay()
 {
+	Super::BeginPlay();
 	bool bWantInCar = false;
 	// First disable both speed/gear displays
 	bInCarCameraActive = false;
