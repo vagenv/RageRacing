@@ -15,7 +15,6 @@
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Vehicles/WheeledVehicleMovementComponent4W.h"
 #include "Engine/SkeletalMesh.h"
-#include "ActionComponent.h"
 
 #define LOCTEXT_NAMESPACE "VehiclePawn"
 

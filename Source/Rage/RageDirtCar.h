@@ -2,14 +2,14 @@
 
 #pragma once
 
-#include "RageBaseCar.h"
+#include "RagePlayerCar.h"
 #include "RageDirtCar.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RAGE_API ARageDirtCar : public ARageBaseCar
+class RAGE_API ARageDirtCar : public ARagePlayerCar
 {
 	GENERATED_BODY()
 public:

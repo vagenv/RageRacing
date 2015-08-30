@@ -2,7 +2,7 @@
 
 #include "Rage.h"
 #include "RageHUD.h"
-#include "RageBaseCar.h"
+#include "RagePlayerCar.h"
 
 /*
 #include "Engine/Canvas.h"
@@ -17,7 +17,13 @@ ARageHUD::ARageHUD()
 }
 
 
-ARageBaseCar* ARageHUD::GetCar()
+void ARageHUD::BeginPlay()
 {
-	return Cast<ARageBaseCar>(GetOwningPawn());
+	Super::BeginPlay();
+
+
+}
+ARagePlayerCar* ARageHUD::GetCar()
+{
+	return Cast<ARagePlayerCar>(GetOwningPawn());
 }

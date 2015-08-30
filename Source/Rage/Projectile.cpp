@@ -3,16 +3,20 @@
 #include "Rage.h"
 #include "Projectile.h"
 #include "Engine.h"
-
+#include "RageBaseCar.h"
 
 AProjectile::AProjectile(const class FObjectInitializer& PCIP)
 	: Super(PCIP)
 {
 
-	//RootPoint = PCIP.CreateDefaultSubobject<USceneComponent>(this, TEXT("RootPoint"));
+	//RootComponent = PCIP.CreateDefaultSubobject<USceneComponent>(this, TEXT("RootPoint"));
 
+	Mesh = PCIP.CreateDefaultSubobject<UStaticMeshComponent>(this, TEXT("ProjectileMesh"));
+	Mesh->bReceivesDecals = false;
+	Mesh->CastShadow = false;
+	RootComponent = Mesh;
+	//Mesh->AttachParent = RootComponent;
 
-	//Mesh->AttachParent = RootPoint;
 
 	// Use a sphere as a simple collision representation
 	CollisionComp = PCIP.CreateDefaultSubobject<USphereComponent>(this, TEXT("SphereComp"));
@@ -20,15 +24,10 @@ AProjectile::AProjectile(const class FObjectInitializer& PCIP)
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");			// Collision profiles are defined in DefaultEngine.ini
 	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);		// set up a notification for when this component overlaps something
-	RootComponent = CollisionComp;
+	CollisionComp->IgnoreActorWhenMoving(TheCar, true);
+	CollisionComp->IgnoreActorWhenMoving(TheWeapon, true);
+	CollisionComp->AttachParent = Mesh;
 
-
-
-	Mesh = PCIP.CreateDefaultSubobject<UStaticMeshComponent>(this, TEXT("ProjectileMesh"));
-	Mesh->bReceivesDecals = false;
-	Mesh->CastShadow = false;
-	Mesh->AttachParent = CollisionComp;
-	//CollisionComp->AttachParent=Mesh;
 
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = PCIP.CreateDefaultSubobject<UProjectileMovementComponent>(this, TEXT("ProjectileComp"));
@@ -46,7 +45,7 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	Mesh->SetMobility(EComponentMobility::Movable);
-	ProjectileMovement->Velocity = FVector(0);
+	//ProjectileMovement->Velocity = FVector(0);
 	const UWorld* theWorld = GetWorld();
 	if (theWorld)
 	{
@@ -70,15 +69,15 @@ void AProjectile::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVec
 {
 
 	if (!bInstantExplode)return;
-
-	printr("Hit Something");
+	//printg(OtherActor->GetName());
+	//printr("Hit Something");
 	//if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, OtherComp->GetName());
 	// Only add impulse and destroy projectile if we hit a physics
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp != Mesh)
 	{
+	
+		//printg(OtherComp->GetName());
 		Explode();
-		BP_Explode();
-
 	}
 
 }
@@ -86,46 +85,43 @@ void AProjectile::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVec
 void AProjectile::Explode()
 {
 
-	//printr("Explode");
 	const FVector Loc = GetActorLocation();
-
-	//DrawDebugSphere(GetWorld(), GetActorLocation(), AffectArea, 64, FColor::White, false, 5);
-	//DrawDebugSphere(GetWorld(), GetActorLocation(), InnerDamageRadius, 64, FColor::Red, false, 5);
 	for (TActorIterator<AActor> aItr(GetWorld()); aItr; ++aItr)
 	{
-
-		float distance = GetDistanceTo(*aItr);
-		//FVector::Dist(theChar->GetActorLocation(),GetActorLocation())<
-		if (distance<AffectArea && aItr && aItr->GetRootComponent() && aItr->GetRootComponent()->Mobility == EComponentMobility::Movable)
+		if ((aItr && aItr->GetRootComponent() && aItr->GetRootComponent()->IsSimulatingPhysics()) || Cast<ARageBaseCar>(*aItr))
 		{
-
-			FVector dir = aItr->GetActorLocation() - Loc;
-			dir.Normalize();
-
-			float DistanceMultiplier = 1;
-
-			if (distance < InnerDamageRadius)DistanceMultiplier = 1;
-			else DistanceMultiplier = 1 - (distance - InnerDamageRadius) / (AffectArea - InnerDamageRadius);
-
-
-			if (aItr->GetRootComponent()->IsSimulatingPhysics() && Cast<UPrimitiveComponent>(aItr->GetRootComponent()))
+			float distance = GetDistanceTo(*aItr);
+		
+			//FVector::Dist(theChar->GetActorLocation(),GetActorLocation())<
+			if (distance<AffectArea && aItr && aItr->GetRootComponent() && aItr->GetRootComponent()->Mobility == EComponentMobility::Movable)
 			{
-				Cast<UPrimitiveComponent>(aItr->GetRootComponent())->AddImpulse(dir*RadialImpulse*DistanceMultiplier * 1000);
-			}
 
-			/*
-			ABaseCharacter* theChar = Cast<ABaseCharacter>(*aItr);
-			//If Player apply damage
-			if (theChar)
-			{
-				//print(FString::SanitizeFloat(RadialDamage*DistanceMultiplier));
-				//print("Apply Damage");
-				UGameplayStatics::ApplyDamage(theChar, RadialDamage*DistanceMultiplier, NULL, this, ExplosionDamageType);
+				FVector dir = aItr->GetActorLocation() - Loc;
+				dir.Normalize();
+
+				float DistanceMultiplier = 1;
+
+				if (distance < InnerDamageRadius)DistanceMultiplier = 1;
+				else DistanceMultiplier = 1 - (distance - InnerDamageRadius) / (AffectArea - InnerDamageRadius);
+
+				if (Cast<ARageBaseCar>(*aItr))
+				{
+					Cast<ARageBaseCar>(*aItr)->GetMesh()->AddImpulse(dir*RadialImpulse*DistanceMultiplier * CarImpulseMuliplier);
+					//printr(FString::FromInt(RadialImpulse*DistanceMultiplier * CarImpulseMuliplier));
+				}
+				else if (aItr->GetRootComponent()->IsSimulatingPhysics() && Cast<UPrimitiveComponent>(aItr->GetRootComponent()))
+				{
+					Cast<UPrimitiveComponent>(aItr->GetRootComponent())->AddImpulse(dir*RadialImpulse*DistanceMultiplier);
+				}
 			}
-			*/
+			
 		}
 
 	}
+
+
+	BP_Explode();
+
 
 	Destroy();
 }
@@ -134,8 +130,9 @@ void AProjectile::InitVelocity(const FVector& ShootDirection)
 
 	if (ProjectileMovement)
 	{
-		//print("Init Velocity");
+		//printr("Init Velocity" + FVector(ShootDirection * ProjectileMovement->InitialSpeed).ToString());
 		// set the projectile's velocity to the desired direction
 		ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
+		//printg(ProjectileMovement->Velocity.ToString());
 	}
 }

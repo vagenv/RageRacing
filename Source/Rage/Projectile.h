@@ -22,6 +22,8 @@ public:
 
 
 
+	AActor* TheCar;
+	AActor* TheWeapon;
 
 
 
@@ -49,9 +51,12 @@ public:
 		float LifeTime = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-		float AffectArea = 400;
+		float AffectArea = 1500;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-		float RadialImpulse = 600;
+		float RadialImpulse = 600000;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+		float CarImpulseMuliplier = 2;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float RadialDamage = 60;
@@ -59,6 +64,10 @@ public:
 		float InnerDamageRadius = 300;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float OuterDamageRadius = 500;
+
+
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		TSubclassOf<class UDamageType> ExplosionDamageType;
 

@@ -22,6 +22,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Projectile")
 		float InitialProjectileVelocity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire Projectile")
+		float VerticalOffsetAngle;
 	
 	
 };

@@ -12,7 +12,9 @@ class ARageHUD : public AHUD
 public:
 	ARageHUD();
 
+	void BeginPlay()override;
 
-	class ARageBaseCar* GetCar();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "")
+	class ARagePlayerCar* GetCar();
 
 };
