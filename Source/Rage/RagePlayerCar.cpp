@@ -227,10 +227,15 @@ void ARagePlayerCar::AltActionUp()
 	}
 }
 
-
 void ARagePlayerCar::BoostDown()
 {
 	BP_BoostDown();
+
+	GetWorldTimerManager().SetTimer(BoostTimerHandle, this, &ARagePlayerCar::Boost, Energy_BoostJumpSelectDelay, false);
+}
+void ARagePlayerCar::Boost()
+{
+	BP_Boost();
 }
 void ARagePlayerCar::BoostUp()
 {
@@ -240,4 +245,19 @@ void ARagePlayerCar::BoostUp()
 void ARagePlayerCar::DoubleJump()
 {
 	BP_DoubleJump();
+
+	FVector TheJumpImpulse = FVector(0); //GetVelocity();
+
+	TheJumpImpulse += GetActorForwardVector()*Energy_CurrentValue*Energy_JumpMultiplier*Energy_JumpDirection.X;
+	TheJumpImpulse.Z = Energy_CurrentValue*Energy_JumpMultiplier*Energy_JumpDirection.Y;
+
+	GetMesh()->AddImpulse(TheJumpImpulse, NAME_None, true);
+
+
+
+	if (GetWorldTimerManager().IsTimerActive(BoostTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(BoostTimerHandle);
+	}
+
 }

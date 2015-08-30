@@ -49,6 +49,7 @@ public:
 	virtual void BeginPlay() override;
 
 
+	FTimerHandle BoostTimerHandle;
 
 
 	/** The current speed as a string eg 10 km/h */
@@ -160,6 +161,11 @@ public:
 		float Energy_BoostMultiplier = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_JumpMultiplier = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		FVector2D Energy_JumpDirection =FVector2D(0.5,1) ;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float Energy_BoostJumpSelectDelay=0.3;
+
 
 	void Energy_Restore();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
@@ -175,8 +181,10 @@ public:
 	void AltActionDown();
 	void AltActionUp();
 
+	void Boost();
 	void BoostDown();
 	void BoostUp();
+	
 
 	void DoubleJump();
 
@@ -197,6 +205,8 @@ protected:
 
 	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
 		void BP_BoostDown();
+	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+		void BP_Boost();
 	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
 		void BP_BoostUp();
 
