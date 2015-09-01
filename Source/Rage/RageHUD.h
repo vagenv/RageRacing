@@ -14,6 +14,15 @@ public:
 
 	void BeginPlay()override;
 
+	void PostBeginPlay();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+		float PostDelay=0.3;
+
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "")
+		void BP_InventoryUpdated();
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "")
 	class ARagePlayerCar* GetCar();
 

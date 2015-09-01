@@ -25,7 +25,7 @@ public:
 
 
 	UFUNCTION(BlueprintImplementableEvent, Category = " ")
-		void BP_ItemPickedUp();
+		void BP_ItemPickedUp(class ARagePlayerCar* TheCar);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = " ")
 		void BP_ItemUsed();

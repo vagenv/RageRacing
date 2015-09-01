@@ -26,6 +26,7 @@ AProjectile::AProjectile(const class FObjectInitializer& PCIP)
 	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);		// set up a notification for when this component overlaps something
 	CollisionComp->IgnoreActorWhenMoving(TheCar, true);
 	CollisionComp->IgnoreActorWhenMoving(TheWeapon, true);
+	CollisionComp->IgnoreActorWhenMoving(this, true);
 	CollisionComp->AttachParent = Mesh;
 
 
@@ -76,7 +77,7 @@ void AProjectile::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVec
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp != Mesh)
 	{
 	
-		//printg(OtherComp->GetName());
+		printg(OtherActor->GetName());
 		Explode();
 	}
 

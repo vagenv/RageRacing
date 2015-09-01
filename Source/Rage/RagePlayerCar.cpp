@@ -8,8 +8,8 @@
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/TextRenderComponent.h"
-
-
+#include "Item.h"
+#include "RageHUD.h"
 
 const FName ARagePlayerCar::LookUpBinding("LookUp");
 const FName ARagePlayerCar::LookRightBinding("LookRight");
@@ -231,11 +231,19 @@ void ARagePlayerCar::BoostDown()
 {
 	BP_BoostDown();
 
-	GetWorldTimerManager().SetTimer(BoostTimerHandle, this, &ARagePlayerCar::Boost, Energy_BoostJumpSelectDelay, false);
+	if (CanBoost())
+		GetWorldTimerManager().SetTimer(BoostTimerHandle, this, &ARagePlayerCar::Boost, Energy_BoostJumpSelectDelay, false);
 }
 void ARagePlayerCar::Boost()
 {
 	BP_Boost();
+
+
+
+	GetMesh()->AddImpulse(GetActorForwardVector()*Energy_CurrentValue*Energy_BoostMultiplier, NAME_None, true);
+	UseEnergy();
+
+
 }
 void ARagePlayerCar::BoostUp()
 {
@@ -244,6 +252,14 @@ void ARagePlayerCar::BoostUp()
 
 void ARagePlayerCar::DoubleJump()
 {
+	if (GetWorldTimerManager().IsTimerActive(BoostTimerHandle))
+	{
+		GetWorldTimerManager().ClearTimer(BoostTimerHandle);
+	}
+
+
+	if (!CanJump())return;
+
 	BP_DoubleJump();
 
 	FVector TheJumpImpulse = FVector(0); //GetVelocity();
@@ -251,13 +267,59 @@ void ARagePlayerCar::DoubleJump()
 	TheJumpImpulse += GetActorForwardVector()*Energy_CurrentValue*Energy_JumpMultiplier*Energy_JumpDirection.X;
 	TheJumpImpulse.Z = Energy_CurrentValue*Energy_JumpMultiplier*Energy_JumpDirection.Y;
 
-	GetMesh()->AddImpulse(TheJumpImpulse, NAME_None, true);
+	GetMesh()->AddImpulse(TheJumpImpulse, NAME_None, true);	
+
+	UseEnergy();
+}
+
+
+void ARagePlayerCar::UseEnergy()
+{
+	Energy_CurrentValue = 0;
+}
+
+bool ARagePlayerCar::CanBoost()
+{
+	//if (!VehicleMovement->IsMovingOnGround())return false;
+	if (Energy_CurrentValue < Energy_BoostMinValue) return false;
+
+	return true;
+}
+
+bool ARagePlayerCar::CanJump()
+{
+	//if (!VehicleMovement->IsMovingOnGround())return false;
+	if (Energy_CurrentValue < Energy_BoostJumpMinValue) return false;
+	return true;
+}
 
 
 
-	if (GetWorldTimerManager().IsTimerActive(BoostTimerHandle))
+void ARagePlayerCar::InventoryUpdated()
+{
+	BP_InventoryUpdated();
+	if (TheHUD)TheHUD->BP_InventoryUpdated();
+	else printr("NO HUD");
+}
+
+void ARagePlayerCar::ItemPickup(TSubclassOf<class AItem>  TheItem)
+{
+
+	TheItem->GetDefaultObject<AItem>()->BP_ItemPickedUp(this);
+
+	ItemList.Add(TheItem);
+	BP_ItemPickedUp(TheItem->GetDefaultObject<AItem>(),TheItem);
+	InventoryUpdated();
+
+}
+TArray<AItem* > ARagePlayerCar::GetTheItemList()
+{
+	TArray<AItem* > TheArray;
+	for (int i = 0; i < ItemList.Num();i++)
 	{
-		GetWorldTimerManager().ClearTimer(BoostTimerHandle);
+		if (ItemList.IsValidIndex(i) && ItemList[i]->GetDefaultObject<AItem>())
+			TheArray.Add(ItemList[i]->GetDefaultObject<AItem>());
 	}
 
+	return TheArray;
 }

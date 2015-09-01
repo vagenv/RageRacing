@@ -124,18 +124,46 @@ public:
 
 
 
+	// Inventory
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+		TArray< TSubclassOf<class AItem> > ItemList;
+
 
 	////////					  Weapon Part
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 		TSubclassOf<class AWeapon> DefaultMainWeapon;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+		TSubclassOf<class AWeapon> DefaultAltWeapon;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class AWeapon* MainWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		TSubclassOf<class AWeapon> DefaultAltWeapon;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class AWeapon* AltWeapon;
+
+
+
+	// Inventory
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+		void BP_ItemPickedUp(class AItem* TheItem, TSubclassOf<class AItem>  TheSubClass);
+
+	void ItemPickup(TSubclassOf<class AItem>  TheItem);
+
+
+	void InventoryUpdated();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+		void BP_InventoryUpdated();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "")
+	TArray< class AItem* > GetTheItemList();
+
+
+
+	class ARageHUD* TheHUD;
 	/*
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
 	TArray<FWeaponSlot> WeaponMainList;
@@ -157,15 +185,29 @@ public:
 		float Energy_RestoreSpeed = 0.1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_RestoreValue = 1;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_BoostMultiplier = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float Energy_BoostMinValue = 40;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_JumpMultiplier = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		FVector2D Energy_JumpDirection =FVector2D(0.5,1) ;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_BoostJumpSelectDelay=0.3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float Energy_BoostJumpMinValue= 50;
+	
 
+	void UseEnergy();
+
+
+	bool CanBoost();
+	bool CanJump();
 
 	void Energy_Restore();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")

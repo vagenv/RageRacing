@@ -16,12 +16,21 @@ ARageHUD::ARageHUD()
 
 }
 
-
 void ARageHUD::BeginPlay()
 {
 	Super::BeginPlay();
 
+	FTimerHandle MyHandle;
+	GetWorldTimerManager().SetTimer(MyHandle, this, &ARageHUD::PostBeginPlay, PostDelay,false);
 
+}
+
+void ARageHUD::PostBeginPlay()
+{
+	if (GetOwningPawn() && Cast<ARagePlayerCar>(GetOwningPawn()))
+	{
+		Cast<ARagePlayerCar>(GetOwningPawn())->TheHUD = this;
+	}
 }
 ARagePlayerCar* ARageHUD::GetCar()
 {
