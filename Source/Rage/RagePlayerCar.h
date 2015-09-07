@@ -49,7 +49,9 @@ public:
 	virtual void BeginPlay() override;
 
 
-	FTimerHandle BoostTimerHandle;
+	void EquipDefaultWeapons();
+
+	FTimerHandle BoostDelayTimerHandle;
 
 
 	/** The current speed as a string eg 10 km/h */
@@ -126,7 +128,7 @@ public:
 
 	// Inventory
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-		TArray< TSubclassOf<class AItem> > ItemList;
+		TArray<class AItem*> ItemList;
 
 
 	////////					  Weapon Part
@@ -163,6 +165,9 @@ public:
 
 
 
+
+
+
 	class ARageHUD* TheHUD;
 	/*
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
@@ -192,7 +197,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_BoostMinValue = 40;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_JumpMultiplier = 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
@@ -201,18 +205,41 @@ public:
 		float Energy_BoostJumpSelectDelay=0.3;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
 		float Energy_BoostJumpMinValue= 50;
-	
-
-	void UseEnergy();
 
 
-	bool CanBoost();
-	bool CanJump();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+		void UseAllEnergy();
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+		void UseEnergy(float Value);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
+		bool CanBoost();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
+		bool CanJump();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+		void StartEneryRestore();
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+		void StopEneryRestore();
+
+	FTimerHandle EnergyRestoreHandle;
 
 	void Energy_Restore();
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
 		float GetEnergyPercent();
 
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void EquipNewWeapon(class AWeapon* TheWeapon);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void UnequipWeapon(uint8 WeaponType);
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void SearchNewWeaponEquip();
 
 
 	// Bind External Calling
@@ -226,6 +253,10 @@ public:
 	void Boost();
 	void BoostDown();
 	void BoostUp();
+
+
+	void NextAction();
+	void NextAltAction();
 	
 
 	void DoubleJump();
@@ -238,6 +269,10 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
 		void BP_ActionUp();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+		void BP_NextAction();
+	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+		void BP_NextAltAction();
 
 
 	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
@@ -256,4 +291,12 @@ protected:
 		void BP_DoubleJump();
 
 	
+
+	/*
+	
+	UPROPERTY(EditAnywhere, Category = "Energy")
+		FRuntimeFloatCurve Energy_BoostCurve;
+
+	
+	*/
 };

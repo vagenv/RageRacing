@@ -43,6 +43,11 @@ ARagePlayerCar::ARagePlayerCar()
 	InternalCamera->FieldOfView = 90.f;
 	InternalCamera->SetRelativeLocation(InternalCameraOrigin);
 	InternalCamera->AttachTo(GetMesh());
+
+
+
+
+
 }
 
 void ARagePlayerCar::BeginPlay()
@@ -53,38 +58,57 @@ void ARagePlayerCar::BeginPlay()
 	// First disable both speed/gear displays
 	bInCarCameraActive = false;
 
+	MainWeapon = NULL;
+	AltWeapon = NULL;
 
 	EnableIncarView(bWantInCar);
 
+	EquipDefaultWeapons();
+	//FTimerHandle MyHandle;
+	//GetWorldTimerManager().SetTimer(MyHandle, this, &ARagePlayerCar::EquipDefaultWeapons,0.2f,false);
 
 
-	FTimerHandle MyHandle;
-	GetWorldTimerManager().SetTimer(MyHandle, this, &ARagePlayerCar::Energy_Restore, Energy_RestoreSpeed, true);
-
-	if (DefaultMainWeapon)
-	{
-
-		MainWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultMainWeapon);
-		MainWeapon->AttachRootComponentTo(GetMesh(), MainWeapon->AttachSocket);
-		MainWeapon->TheCar = this;
-		//MainWeapon->AttachActorToActor
-		//MainWeapon->AttachTo(TheCar->GetMesh(), "MainWeaponSocket");
-
-	}
-	if (DefaultAltWeapon)
-	{
-
-		AltWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultAltWeapon);
-		AltWeapon->AttachRootComponentTo(GetMesh(), AltWeapon->AttachSocket);
-		AltWeapon->TheCar = this;
-		//AltWeapon->AttachTo(TheCar->GetMesh(), "AltWeaponSocket");
-	}
-
-
+	StartEneryRestore();
 
 }
 
 
+void ARagePlayerCar::EquipDefaultWeapons()
+{
+
+	if (DefaultMainWeapon)
+	{
+		MainWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultMainWeapon);
+		MainWeapon->AttachRootComponentTo(GetMesh(), MainWeapon->AttachSocket);
+		MainWeapon->TheCar = this;
+		ItemList.Add(MainWeapon);
+
+	}
+	if (DefaultAltWeapon)
+	{
+		AltWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultAltWeapon);
+		AltWeapon->AttachRootComponentTo(GetMesh(), MainWeapon->AttachSocket);
+		AltWeapon->TheCar = this;
+		ItemList.Add(AltWeapon);
+	}
+
+	InventoryUpdated();
+}
+
+
+void ARagePlayerCar::StartEneryRestore()
+{
+	GetWorldTimerManager().SetTimer(EnergyRestoreHandle, this, &ARagePlayerCar::Energy_Restore, Energy_RestoreSpeed, true);
+
+}
+
+void ARagePlayerCar::StopEneryRestore()
+{
+	if (GetWorldTimerManager().IsTimerActive(EnergyRestoreHandle))
+	{
+		GetWorldTimerManager().ClearTimer(EnergyRestoreHandle);
+	}
+}
 
 
 
@@ -112,6 +136,9 @@ void ARagePlayerCar::SetupPlayerInputComponent(class UInputComponent* InputCompo
 	InputComponent->BindAction("Boost", IE_Released, this, &ARagePlayerCar::BoostUp);
 
 	InputComponent->BindAction("Boost", IE_DoubleClick, this, &ARagePlayerCar::DoubleJump);
+
+	InputComponent->BindAction("NextAction", IE_Pressed, this, &ARagePlayerCar::NextAction);
+	InputComponent->BindAction("NextAltAction", IE_Pressed, this, &ARagePlayerCar::NextAltAction);
 	/*
 	*/
 }
@@ -232,7 +259,7 @@ void ARagePlayerCar::BoostDown()
 	BP_BoostDown();
 
 	if (CanBoost())
-		GetWorldTimerManager().SetTimer(BoostTimerHandle, this, &ARagePlayerCar::Boost, Energy_BoostJumpSelectDelay, false);
+		GetWorldTimerManager().SetTimer(BoostDelayTimerHandle, this, &ARagePlayerCar::Boost, Energy_BoostJumpSelectDelay, false);
 }
 void ARagePlayerCar::Boost()
 {
@@ -240,8 +267,8 @@ void ARagePlayerCar::Boost()
 
 
 
-	GetMesh()->AddImpulse(GetActorForwardVector()*Energy_CurrentValue*Energy_BoostMultiplier, NAME_None, true);
-	UseEnergy();
+	//GetMesh()->AddImpulse(GetActorForwardVector()*Energy_CurrentValue*Energy_BoostMultiplier, NAME_None, true);
+	//UseEnergy();
 
 
 }
@@ -250,11 +277,30 @@ void ARagePlayerCar::BoostUp()
 	BP_BoostUp();
 }
 
+void ARagePlayerCar::NextAction()
+{
+	BP_NextAction();
+
+	for (int i = 0; i < ItemList.Num();i++)
+	{
+		if (ItemList.IsValidIndex(i) && ItemList[i])
+		{
+			printg(ItemList[i]->Name);
+		}
+	}
+
+}
+
+void ARagePlayerCar::NextAltAction()
+{
+	BP_NextAltAction();
+}
+
 void ARagePlayerCar::DoubleJump()
 {
-	if (GetWorldTimerManager().IsTimerActive(BoostTimerHandle))
+	if (GetWorldTimerManager().IsTimerActive(BoostDelayTimerHandle))
 	{
-		GetWorldTimerManager().ClearTimer(BoostTimerHandle);
+		GetWorldTimerManager().ClearTimer(BoostDelayTimerHandle);
 	}
 
 
@@ -262,21 +308,38 @@ void ARagePlayerCar::DoubleJump()
 
 	BP_DoubleJump();
 
-	FVector TheJumpImpulse = FVector(0); //GetVelocity();
+
+	FVector TheJumpImpulse = GetActorUpVector();// FVector(0); //GetVelocity();
+
+	
+	TheJumpImpulse.Z *= Energy_CurrentValue*Energy_JumpMultiplier*Energy_JumpDirection.Y;
+
 
 	TheJumpImpulse += GetActorForwardVector()*Energy_CurrentValue*Energy_JumpMultiplier*Energy_JumpDirection.X;
-	TheJumpImpulse.Z = Energy_CurrentValue*Energy_JumpMultiplier*Energy_JumpDirection.Y;
+
 
 	GetMesh()->AddImpulse(TheJumpImpulse, NAME_None, true);	
 
-	UseEnergy();
+	UseAllEnergy();
+	/*
+	*/
 }
 
 
-void ARagePlayerCar::UseEnergy()
+void ARagePlayerCar::UseAllEnergy()
 {
 	Energy_CurrentValue = 0;
 }
+void ARagePlayerCar::UseEnergy(float Value)
+{
+	if (Energy_CurrentValue<Value)
+	{
+		Energy_CurrentValue = 0;
+	}
+	else Energy_CurrentValue -=Value;
+}
+
+
 
 bool ARagePlayerCar::CanBoost()
 {
@@ -295,31 +358,179 @@ bool ARagePlayerCar::CanJump()
 
 
 
+
+void ARagePlayerCar::EquipNewWeapon(AWeapon* TheWeapon)
+{
+	//printg("Equip new Weapon"+TheWeapon->Name);
+	if (TheWeapon->WeaponType==EWeaponArchetype::Main && MainWeapon==NULL)
+	{
+		MainWeapon = GetWorld()->SpawnActor<AWeapon>(TheWeapon->GetClass());
+		MainWeapon->AttachRootComponentTo(GetMesh(), MainWeapon->AttachSocket);
+		MainWeapon->TheCar = this;
+		if (!ItemList.Contains(TheWeapon))
+			ItemList.Add(TheWeapon);
+		
+	}
+	else if (TheWeapon->WeaponType == EWeaponArchetype::Secondary && AltWeapon == NULL)
+	{
+
+		AltWeapon = GetWorld()->SpawnActor<AWeapon>(TheWeapon->GetClass());
+		AltWeapon->AttachRootComponentTo(GetMesh(), AltWeapon->AttachSocket);
+		AltWeapon->TheCar = this;
+		if (!ItemList.Contains(TheWeapon))
+			ItemList.Add(TheWeapon);
+	}
+
+	BP_InventoryUpdated();
+}
+
+void ARagePlayerCar::UnequipWeapon(uint8 WeaponType)
+{
+	//printr("Unequip Weapon");
+	if (EWeaponArchetype(WeaponType) == EWeaponArchetype::Main && MainWeapon)
+	{
+		if (MainWeapon->FireCost > 0 && MainWeapon->CurrentAmmo < MainWeapon->FireCost)
+		{
+			for (int i = 0; i < ItemList.Num();i++)
+			{
+				if (ItemList.IsValidIndex(i) && MainWeapon->GetClass() == ItemList[i]->GetClass())
+				{
+					ItemList.RemoveAt(i);
+					break;
+				}
+			}
+		}
+		MainWeapon->Destroy();
+		MainWeapon = NULL;
+
+	}
+	if (EWeaponArchetype(WeaponType) == EWeaponArchetype::Secondary && AltWeapon)
+	{
+		if (AltWeapon->FireCost > 0 && AltWeapon->CurrentAmmo < AltWeapon->FireCost)
+		{
+			for (int i = 0; i < ItemList.Num(); i++)
+			{
+				if (ItemList.IsValidIndex(i) && AltWeapon->GetClass() == ItemList[i]->GetClass())
+				{
+					ItemList.RemoveAt(i);
+					break;
+				}
+			}
+		}
+		AltWeapon->Destroy();
+		AltWeapon = NULL;
+	}
+
+
+	InventoryUpdated();
+
+
+
+	FTimerHandle MyHandle;
+	GetWorldTimerManager().SetTimer(MyHandle, this, &ARagePlayerCar::SearchNewWeaponEquip, 1, false);
+}
+void ARagePlayerCar::SearchNewWeaponEquip()
+{
+	//printb("Search new Weapon");
+	if (MainWeapon == NULL || AltWeapon == NULL)
+	{
+		for (int i = 0; i < ItemList.Num();i++)
+		{
+			if (ItemList.IsValidIndex(i) && Cast<AWeapon>(ItemList[i]) )
+			{
+				if (MainWeapon == NULL && Cast<AWeapon>(ItemList[i])->WeaponType == EWeaponArchetype::Main)
+				{
+					EquipNewWeapon(Cast<AWeapon>(ItemList[i]));
+				}
+				if (AltWeapon == NULL  &&Cast<AWeapon>(ItemList[i])->WeaponType == EWeaponArchetype::Secondary)
+				{
+					EquipNewWeapon(Cast<AWeapon>(ItemList[i]));
+				}
+			}
+		}
+	}
+
+	InventoryUpdated();
+}
+
+
+
+
 void ARagePlayerCar::InventoryUpdated()
 {
+	//print("Update HUD");
 	BP_InventoryUpdated();
 	if (TheHUD)TheHUD->BP_InventoryUpdated();
-	else printr("NO HUD");
+	//else printr("NO HUD");
 }
 
 void ARagePlayerCar::ItemPickup(TSubclassOf<class AItem>  TheItem)
 {
 
-	TheItem->GetDefaultObject<AItem>()->BP_ItemPickedUp(this);
+	bool bNewItem = true;
 
-	ItemList.Add(TheItem);
-	BP_ItemPickedUp(TheItem->GetDefaultObject<AItem>(),TheItem);
+	AItem* TheItemPtr = TheItem->GetDefaultObject<AItem>();
+	// If stacking item
+	// Weapon Stacking
+	
+	if (TheItemPtr && Cast<AWeapon>(TheItemPtr))
+	{
+		AWeapon* NewWeapon = Cast<AWeapon>(TheItemPtr);
+
+		for (int i = 0; i < ItemList.Num(); i++)
+		{
+			if (ItemList.IsValidIndex(i) && Cast<AWeapon>(ItemList[i]) && NewWeapon->GetClass() == ItemList[i]->GetClass())
+			{
+				Cast<AWeapon>(ItemList[i])->AddAmmoPickup(NewWeapon);
+				bNewItem = false;
+				break;
+			}
+
+		}
+	}
+	/*
+	*/
+
+
+
+	// If new Item
+	if (bNewItem)
+	{
+		ItemList.Add(TheItem->GetDefaultObject<AItem>());
+	}
+	TheItemPtr->BP_ItemPickedUp(this);
+
+
+	//  If no current weapon equip new obtained
+	if (!MainWeapon || !AltWeapon)
+	{
+		AWeapon* TempWeapon = TheItem->GetDefaultObject<AWeapon>();
+		if (TempWeapon)
+		{
+			if (TempWeapon->WeaponType == EWeaponArchetype::Main && !MainWeapon)
+			{
+
+				MainWeapon = GetWorld()->SpawnActor<AWeapon>(TheItem);
+				MainWeapon->AttachRootComponentTo(GetMesh(), MainWeapon->AttachSocket);
+				MainWeapon->TheCar = this;
+			}
+			else if (TempWeapon->WeaponType == EWeaponArchetype::Secondary && !AltWeapon)
+			{
+				AltWeapon = GetWorld()->SpawnActor<AWeapon>(TheItem);
+				AltWeapon->AttachRootComponentTo(GetMesh(), AltWeapon->AttachSocket);
+				AltWeapon->TheCar = this;
+			}
+		}
+	}
+	
+
+
+
+	BP_ItemPickedUp(TheItemPtr, TheItem);
 	InventoryUpdated();
 
 }
 TArray<AItem* > ARagePlayerCar::GetTheItemList()
 {
-	TArray<AItem* > TheArray;
-	for (int i = 0; i < ItemList.Num();i++)
-	{
-		if (ItemList.IsValidIndex(i) && ItemList[i]->GetDefaultObject<AItem>())
-			TheArray.Add(ItemList[i]->GetDefaultObject<AItem>());
-	}
-
-	return TheArray;
+	return ItemList;
 }

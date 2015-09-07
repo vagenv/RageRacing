@@ -6,6 +6,23 @@
 #include "Weapon.generated.h"
 
 
+UENUM(BlueprintType)		//"BlueprintType" is essential to include
+enum class EWeaponArchetype : uint8
+{
+	Main						UMETA(DisplayName = "Main Weapon"),
+	Secondary					UMETA(DisplayName = "Secondary Weapon"),
+	Ultimate					UMETA(DisplayName = "Ultimate Weapon"),
+
+};
+
+UENUM(BlueprintType)		//"BlueprintType" is essential to include
+enum class EAmmoDisplayType : uint8
+{
+	Digit						UMETA(DisplayName = "Numberical"),
+	Bar							UMETA(DisplayName = "Bar"),
+};
+
+
 UCLASS()
 class RAGE_API AWeapon : public AItem
 {
@@ -30,9 +47,15 @@ public:
 	UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
 		UStaticMeshComponent* TheStaticMeshComponent;
 
-	UPROPERTY(Category = "Mesh", EditAnywhere, BlueprintReadOnly)
-		FName AttachSocket;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		EWeaponArchetype WeaponType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		TArray<FName> AttachSockets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		FName AttachSocket="";
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		float ClipSize=10;
@@ -55,7 +78,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		float WeaponFireFeedback = 0;
 
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		bool bRestoreAmmo = false;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -64,7 +86,19 @@ public:
 		float AmmoRestoreValue =0.0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		EAmmoDisplayType AmmoDisplayType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		bool DrawDebugData=false;
+
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
+		float GetCurrentAmmoPercent();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void AddAmmoValue(float AmmoAmount);
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void AddAmmoPickup(AWeapon* WeaponPickup);
 
 
 	
