@@ -2,7 +2,7 @@
 
 #include "Rage.h"
 #include "ItemPickup.h"
-#include "RagePlayerCar.h"
+#include "Vehicle/RagePlayerCar.h"
 #include "Item.h"
 // Sets default values
 AItemPickup::AItemPickup(const class FObjectInitializer& PCIP)

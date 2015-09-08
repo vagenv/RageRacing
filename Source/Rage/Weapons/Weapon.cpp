@@ -1,9 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Rage.h"
-#include "Weapon.h"
 #include "Engine.h"
-#include "RagePlayerCar.h"
+
+
+#include "Weapons/Weapon.h"
+#include "Vehicle/RagePlayerCar.h"
 
 AWeapon::AWeapon(const class FObjectInitializer& PCIP) :AItem(PCIP)
 {

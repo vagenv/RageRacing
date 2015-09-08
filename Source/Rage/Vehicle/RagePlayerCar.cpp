@@ -1,15 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Rage.h"
-#include "RagePlayerCar.h"
 #include "Engine.h"
-#include "Weapon.h"
+
+
+#include "Vehicle/RagePlayerCar.h"
+#include "Weapons/Weapon.h"
+#include "Item.h"
+#include "RageHUD.h"
+
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/TextRenderComponent.h"
-#include "Item.h"
-#include "RageHUD.h"
 
 const FName ARagePlayerCar::LookUpBinding("LookUp");
 const FName ARagePlayerCar::LookRightBinding("LookRight");

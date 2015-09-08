@@ -1,7 +1,7 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
 
 #include "Rage.h"
-#include "RageWheelRear.h"
+#include "Wheels/RageWheelRear.h"
 #include "Vehicles/TireType.h"
 
 URageWheelRear::URageWheelRear()

@@ -2,8 +2,8 @@
 
 #include "Rage.h"
 #include "RageGameMode.h"
-#include "RageBaseCar.h"
-#include "RageHud.h"
+#include "Vehicle/RageBaseCar.h"
+#include "RageHUD.h"
 
 ARageGameMode::ARageGameMode()
 {

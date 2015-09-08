@@ -2,9 +2,10 @@
 
 #include "Rage.h"
 #include "Engine.h"
-#include "ProjectileWeapon.h"
+
+#include "Vehicle/RageBaseCar.h"
+#include "Weapons/ProjectileWeapon.h"
 #include "Projectile.h"
-#include "RageBaseCar.h"
 
 
 void AProjectileWeapon::Fire()

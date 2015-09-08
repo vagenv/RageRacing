@@ -1,9 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Rage.h"
-#include "RifleWeapon.h"
-#include "RageBaseCar.h"
 #include "Engine.h"
+
+#include "Weapons/RifleWeapon.h"
+#include "Vehicle/RageBaseCar.h"
+
 
 
 

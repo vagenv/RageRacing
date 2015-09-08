@@ -1,12 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Rage.h"
-#include "RageData.h"
+#include "Vehicle/RageRaceCar.h"
 
-RageData::RageData()
-{
-}
 
-RageData::~RageData()
-{
-}
+
+

@@ -1,16 +1,19 @@
 // Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
 
 #include "Rage.h"
-#include "RageBaseCar.h"
-#include "RageWheelFront.h"
-#include "RageWheelRear.h"
-#include "Components/SkeletalMeshComponent.h"
 
+#include "Vehicle/RageBaseCar.h"
+#include "Wheels/RageWheelFront.h"
+#include "Wheels/RageWheelRear.h"
+#include "Weapons/Weapon.h"
+
+
+#include "Components/SkeletalMeshComponent.h"
 #include "Sound/SoundCue.h"
 #include "PhysicalMaterials/PhysicalMaterial.h"
 #include "Vehicles/WheeledVehicleMovementComponent4W.h"
 #include "Engine/SkeletalMesh.h"
-#include "Weapon.h"
+
 
 
 const FName ARageBaseCar::EngineAudioRPM("RPM");

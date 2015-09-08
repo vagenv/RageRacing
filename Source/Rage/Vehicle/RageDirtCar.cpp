@@ -1,11 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Rage.h"
 #include "Engine.h"
-#include "RageDirtCar.h"
-#include "RageWheelFront.h"
-#include "RageWheelRear.h"
+
+#include "Vehicle/RageDirtCar.h"
+#include "Wheels/RageWheelFront.h"
+#include "Wheels/RageWheelRear.h"
+
 #include "RageHUD.h"
+
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
