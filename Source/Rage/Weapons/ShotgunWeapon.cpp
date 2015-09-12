@@ -18,7 +18,7 @@ void AShotgunWeapon::Fire()
 
 	const FVector StartTrace = TheStaticMeshComponent->GetSocketLocation(TEXT("MuzzleFlashSocket"));
 	const FVector Direction = GetActorForwardVector();
-	const FVector EndTrace = StartTrace + Direction * FireDistance;
+	const FVector EndTrace = StartTrace + Direction * WeaponData.FireDistance;
 
 
 	float localx;

@@ -56,30 +56,66 @@ void AWeapon::BeginPlay()
 
 float AWeapon::GetCurrentAmmoPercent()
 {
-	if (ClipSize>0 && CurrentAmmo>0)
+	if (WeaponData.ClipSize>0 && WeaponData.CurrentAmmo>0)
 	{
-		return CurrentAmmo / ClipSize;
+		return WeaponData.CurrentAmmo / WeaponData.ClipSize;
 	}
 
 	return 0;
 }
 
-void AWeapon::FireStart()
+
+bool AWeapon::FireStart_Validate()
+{
+	return true;
+}
+void AWeapon::FireStart_Implementation()
 {
 	if (CanShoot())
 	{
 		bFirePressed = true;
 		if (!GetWorldTimerManager().IsTimerActive(FireHandle))
-			GetWorldTimerManager().SetTimer(FireHandle, this, &AWeapon::PreFire, FireSpeed, true,0);
+			GetWorldTimerManager().SetTimer(FireHandle, this, &AWeapon::PreFire, WeaponData.FireSpeed, true, 0);
 	}
 	
+	//printg("Fire Start");
 }
 
-void AWeapon::FireEnd()
+bool AWeapon::FireEnd_Validate()
+{
+	return true;
+}
+void AWeapon::FireEnd_Implementation()
 {
 	bFirePressed = false;
+	//printg("Fire End");
 	//GetWorldTimerManager().ClearTimer(FireHandle);
 }
+
+
+/*
+bool AWeapon::Server_Fire_Validate()
+{
+	return true;
+}
+void AWeapon::Server_Fire_Implementation()
+{
+	BP_Server_Fire();
+}
+
+*/
+
+bool AWeapon::Global_Fire_Validate()
+{
+	return true;
+}
+void AWeapon::Global_Fire_Implementation()
+{
+	BP_Fire();
+}
+
+
+
 
 void AWeapon::PreFire()
 {
@@ -91,7 +127,7 @@ void AWeapon::PreFire()
 	}
 
 	// Not enough ammo
-	if (FireCost>0 && FireCost>CurrentAmmo)
+	if (WeaponData.FireCost>0 && WeaponData.FireCost>WeaponData.CurrentAmmo)
 	{
 		GetWorldTimerManager().ClearTimer(FireHandle);
 
@@ -106,11 +142,11 @@ void AWeapon::PreFire()
 	}
 
 	// Call Function repetition
-	GetWorldTimerManager().SetTimer(FireHandle, this, &AWeapon::PreFire, FireSpeed, false);
+	GetWorldTimerManager().SetTimer(FireHandle, this, &AWeapon::PreFire, WeaponData.FireSpeed, false);
 
 	// Actual Event
 	Fire();
-
+	//Global_Fire();
 	/*
 	//	Add Feedback to car
 	if (TheCar)
@@ -124,27 +160,43 @@ void AWeapon::PreFire()
 	*/
 
 	//	Use ammo
-	if (FireCost>0)CurrentAmmo -= FireCost;
+	UseAmmo();
+	
 }
 bool AWeapon::CanShoot()
 {
 	return true;
 }
 
+bool AWeapon::HasAmmo()
+{
+	if (WeaponData.FireCost>0 && WeaponData.CurrentAmmo>WeaponData.FireCost )
+	{
+		return true;
+	}
+
+
+	return false;
+
+}
+void AWeapon::UseAmmo()
+{
+	if (WeaponData.FireCost>0)WeaponData.CurrentAmmo -= WeaponData.FireCost;
+}
 void AWeapon::AddAmmoValue(float AmmoNum)
 {
-	if (CurrentAmmo+AmmoNum>ClipSize)
+	if (WeaponData.CurrentAmmo + AmmoNum> WeaponData.ClipSize)
 	{
-		CurrentAmmo = ClipSize;
+		WeaponData.CurrentAmmo = WeaponData.ClipSize;
 	}
-	else CurrentAmmo += AmmoNum;
+	else WeaponData.CurrentAmmo += AmmoNum;
 }
 
 void AWeapon::AddAmmoPickup(AWeapon* WeaponPickup)
 {
-	if (CurrentAmmo + WeaponPickup->CurrentAmmo>ClipSize)
+	if (WeaponData.CurrentAmmo + WeaponPickup->WeaponData.CurrentAmmo > WeaponData.ClipSize)
 	{
-		CurrentAmmo = ClipSize;
+		WeaponData.CurrentAmmo = WeaponData.ClipSize;
 	}
-	else CurrentAmmo += WeaponPickup->CurrentAmmo;
+	else WeaponData.CurrentAmmo += WeaponPickup->WeaponData.CurrentAmmo;
 }

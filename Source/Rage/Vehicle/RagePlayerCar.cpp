@@ -285,6 +285,46 @@ void ARagePlayerCar::NextAction()
 {
 	BP_NextAction();
 
+
+	TArray<AItem*> TheWeapons = GetMainWeaponList();
+
+	if (MainWeapon && TheWeapons.Num()>1)
+	{
+		if (TheWeapons.Num()==2)
+		{
+			// Switch to other Weapon
+			if (TheWeapons[0] && MainWeapon->GetClass() == TheWeapons[0]->GetClass())
+			{
+				UnequipWeapon((uint8)EWeaponArchetype::Main);
+
+
+
+				EquipNewWeapon(Cast<AWeapon>(TheWeapons[1]));
+			}
+			else if (TheWeapons[0] && MainWeapon->GetClass() == TheWeapons[1]->GetClass())
+			{
+				UnequipWeapon((uint8)EWeaponArchetype::Main);
+				EquipNewWeapon(Cast<AWeapon>(TheWeapons[0]));
+			}
+		}
+		else 
+		{
+			// More versions
+
+			for (int i = 0; i < TheWeapons.Num();i++)
+			{
+				if (TheWeapons.IsValidIndex(i) && TheWeapons[i])
+				{
+
+				}
+			}
+
+		}
+
+
+	}
+
+	/*
 	for (int i = 0; i < ItemList.Num();i++)
 	{
 		if (ItemList.IsValidIndex(i) && ItemList[i])
@@ -292,7 +332,7 @@ void ARagePlayerCar::NextAction()
 			printg(ItemList[i]->Name);
 		}
 	}
-
+	*/
 }
 
 void ARagePlayerCar::NextAltAction()
@@ -393,6 +433,7 @@ void ARagePlayerCar::UnequipWeapon(uint8 WeaponType)
 	//printr("Unequip Weapon");
 	if (EWeaponArchetype(WeaponType) == EWeaponArchetype::Main && MainWeapon)
 	{
+		/*
 		if (MainWeapon->FireCost > 0 && MainWeapon->CurrentAmmo < MainWeapon->FireCost)
 		{
 			for (int i = 0; i < ItemList.Num();i++)
@@ -404,14 +445,17 @@ void ARagePlayerCar::UnequipWeapon(uint8 WeaponType)
 				}
 			}
 		}
+		*/
 		MainWeapon->Destroy();
 		MainWeapon = NULL;
 
 	}
 	if (EWeaponArchetype(WeaponType) == EWeaponArchetype::Secondary && AltWeapon)
 	{
-		if (AltWeapon->FireCost > 0 && AltWeapon->CurrentAmmo < AltWeapon->FireCost)
+		if (AltWeapon->HasAmmo())
 		{
+			/*
+			//AltWeapon->FireCost > 0 && AltWeapon->CurrentAmmo < AltWeapon->FireCost
 			for (int i = 0; i < ItemList.Num(); i++)
 			{
 				if (ItemList.IsValidIndex(i) && AltWeapon->GetClass() == ItemList[i]->GetClass())
@@ -420,6 +464,7 @@ void ARagePlayerCar::UnequipWeapon(uint8 WeaponType)
 					break;
 				}
 			}
+			*/
 		}
 		AltWeapon->Destroy();
 		AltWeapon = NULL;
@@ -534,7 +579,55 @@ void ARagePlayerCar::ItemPickup(TSubclassOf<class AItem>  TheItem)
 	InventoryUpdated();
 
 }
-TArray<AItem* > ARagePlayerCar::GetTheItemList()
+TArray<AItem* > ARagePlayerCar::GetAllItemList()
 {
 	return ItemList;
+}
+
+TArray<AItem* > ARagePlayerCar::GetOnlyItemList()
+{
+	TArray<AItem*> OnlyItems;
+	for (int i = 0; i < ItemList.Num(); i++)
+	{
+		if (ItemList.IsValidIndex(i) && ItemList[i] && !Cast<AWeapon>(ItemList[i]))
+		{
+			OnlyItems.Add(ItemList[i]);
+		}
+	}
+	return OnlyItems;
+}
+
+TArray<AItem* > ARagePlayerCar::GetMainWeaponList()
+{
+	TArray<AItem*> WeaponList;
+
+	for (int i = 0; i < ItemList.Num();i++)
+	{
+		if (ItemList.IsValidIndex(i) && ItemList[i] && Cast<AWeapon>(ItemList[i]) 
+			 && Cast<AWeapon>(ItemList[i])->WeaponType== EWeaponArchetype::Main)
+		{
+			WeaponList.Add(ItemList[i]);
+		}
+	}
+
+	return WeaponList;
+}
+TArray<AItem* > ARagePlayerCar::GetAltWeaponList()
+{
+	TArray<AItem*> WeaponList;
+
+	for (int i = 0; i < ItemList.Num(); i++)
+	{
+		if (ItemList.IsValidIndex(i) && ItemList[i] && Cast<AWeapon>(ItemList[i])
+			&& Cast<AWeapon>(ItemList[i])->WeaponType == EWeaponArchetype::Secondary)
+		{
+			WeaponList.Add(ItemList[i]);
+		}
+	}
+
+	return WeaponList;
+}
+void ARagePlayerCar::SortInventory()
+{
+
 }

@@ -28,6 +28,17 @@ class RAGE_API ARagePlayerCar : public ARageBaseCar
 
 
 
+	/*
+		UFUNCTION(Reliable, Server, WithValidation)
+	
+		bool ADarkPlayer::ServerSetAnimID_Validate(uint8 AnimID){
+			return true;
+		}
+		void ADarkPlayer::ServerSetAnimID_Implementation(uint8 AnimID){
+			GlobalSetAnimID(AnimID);
+		}
+	
+	*/
 
 public:
 
@@ -160,12 +171,19 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
 		void BP_InventoryUpdated();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "")
-	TArray< class AItem* > GetTheItemList();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+		TArray< class AItem* > GetAllItemList();
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+		TArray< class AItem* > GetOnlyItemList();
 
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+		TArray< class AItem* > GetMainWeaponList();
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
+		TArray< class AItem* > GetAltWeaponList();
 
-
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+		void SortInventory();
 
 
 	class ARageHUD* TheHUD;
