@@ -1,0 +1,16 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{C7C60FCA-4530-0069-E008-D7BF77EBD37F}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "Rage",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine"
+			]
+		}
+	]
+}
