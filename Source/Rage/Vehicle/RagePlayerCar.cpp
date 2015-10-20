@@ -6,7 +6,7 @@
 
 #include "Vehicle/RagePlayerCar.h"
 #include "Weapons/Weapon.h"
-#include "Item.h"
+#include "Inventory/Item.h"
 #include "RageHUD.h"
 
 
