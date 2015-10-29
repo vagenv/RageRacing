@@ -1,14 +1,11 @@
-// Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
+// Copyright 2015 Vagen Ayrapetyan
+
 
 #include "Rage.h"
 #include "RageHUD.h"
+#include "Inventory/Item.h"
 #include "Vehicle/RagePlayerCar.h"
 
-/*
-#include "Engine/Canvas.h"
-#include "Engine/Font.h"
-#include "CanvasItem.h"
-*/
 
 
 ARageHUD::ARageHUD()
@@ -31,8 +28,23 @@ void ARageHUD::PostBeginPlay()
 	{
 		Cast<ARagePlayerCar>(GetOwningPawn())->TheHUD = this;
 	}
+	else 
+	{
+		FTimerHandle MyHandle;
+		GetWorldTimerManager().SetTimer(MyHandle, this, &ARageHUD::PostBeginPlay, PostDelay, false);
+	}
 }
-ARagePlayerCar* ARageHUD::GetCar()
+
+ARagePlayerCar* ARageHUD::GetPlayer()
 {
 	return Cast<ARagePlayerCar>(GetOwningPawn());
+}
+
+AItem* ARageHUD::ItemClassToItemRef(TSubclassOf<AItem> TheItemClass)const
+{
+	if (TheItemClass && TheItemClass->GetDefaultObject<AItem>())
+	{
+		return TheItemClass->GetDefaultObject<AItem>();
+	}
+	else return NULL;
 }

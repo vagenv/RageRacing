@@ -1,4 +1,5 @@
-// Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
+// Copyright 2015 Vagen Ayrapetyan
+
 #pragma once
 #include "GameFramework/GameMode.h"
 #include "RageGameMode.generated.h"
@@ -10,6 +11,19 @@ class ARageGameMode : public AGameMode
 
 public:
 	ARageGameMode();
+
+
+
+	virtual void BeginPlay()override;
+	virtual void PostBeginPlay();
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+
+	// The Save Game file
+	UPROPERTY()
+	class USystemSaveGame* SaveFile;
+
+
 };
 
 

@@ -1,4 +1,5 @@
-// Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
+// Copyright 2015 Vagen Ayrapetyan
+
 #pragma once
 #include "GameFramework/HUD.h"
 #include "RageHud.generated.h"
@@ -24,6 +25,10 @@ public:
 		void BP_InventoryUpdated();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "")
-	class ARagePlayerCar* GetCar();
+	class ARagePlayerCar* GetPlayer();
+
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Item")
+	class AItem* ItemClassToItemRef(TSubclassOf<class AItem> TheItemClass)const;
 
 };

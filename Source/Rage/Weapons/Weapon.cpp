@@ -1,11 +1,13 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2015 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "Engine.h"
 
-
+#include "Inventory/Inventory.h"
 #include "Weapons/Weapon.h"
 #include "Vehicle/RagePlayerCar.h"
+#include "UnrealNetwork.h"
+
 
 AWeapon::AWeapon(const class FObjectInitializer& PCIP) :AItem(PCIP)
 {
@@ -14,189 +16,315 @@ AWeapon::AWeapon(const class FObjectInitializer& PCIP) :AItem(PCIP)
 	TheStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	TheStaticMeshComponent->AttachParent = RootComponent;
 
-	AttachSockets.Add(FName("MainWeaponSocket"));
-	AttachSockets.Add(FName("AltWeaponSocket"));
-	AttachSockets.Add(FName("UltimateWeaponSocket"));
-
-
-	
-
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-	bShooting = false;
 
-	if (AttachSocket.ToString().Len()<1 && AttachSockets.Num()>2)
+
+
+	// Double check at the begining
+	bReloading = false;
+	bShooting = false;
+	bEquiped = false;
+}
+
+// Player Pressed Fire
+void AWeapon::FireStart()
+{
+	// BP Fire Started
+	BP_FirePress_Start();
+
+	// If not currently in main and alternative shooting mode/delay  call The Fire event
+	if (ThePlayer && !ThePlayer->GetWorldTimerManager().IsTimerActive(PreFireTimeHandle))
+		ThePlayer->GetWorldTimerManager().SetTimer(PreFireTimeHandle, this, &AWeapon::PreFire, WeaponData.FireSpeed, true, 0);
+
+	// Shooting Enabled
+	bShooting = true;
+
+}
+
+// Player Released Fire
+void AWeapon::FireEnd()
+{
+	// BP Fire Released
+	BP_FirePress_End();
+
+	// Shooting Disabled
+	bShooting = false;
+}
+
+// Pre Fire
+void AWeapon::PreFire()
+{
+	// BP Pre Fire
+	BP_PreFire();
+
+	if (!ThePlayer)return;
+
+	// If player stopped shooting stop event
+	if (!bShooting)
 	{
-		switch (WeaponType)
+		ThePlayer->GetWorldTimerManager().ClearTimer(PreFireTimeHandle);
+		return;
+	}
+
+	// Currently Equiping this weapon, delay a bit
+
+	
+	if (!bEquiped)
+	{
+		// try after a small delay
+		FTimerHandle MyHandle;
+		ThePlayer->GetWorldTimerManager().SetTimer(MyHandle, this, &AWeapon::PreFire, 0.2, false);
+		return;
+	}
+	/*
+	*/
+
+
+	// Wrong Player Anim State
+	if (!CanShoot())return;
+
+	// Ammo Check
+	if (!WeaponData.CanFire())
+	{
+		//  BP No Ammo
+		BP_NoAmmo();
+		UnEquipStart();
+		RemoveThisItemFromInventory();
+		return;
+	}
+
+	// The real fire event
+	Fire();
+
+	// Use Ammo
+	if (bUseAmmo)UseAmmo();
+}
+
+
+
+void AWeapon::InventoryUse(ARagePlayerCar* Player)
+{
+	Super::InventoryUse(Player);
+
+	if (Player)Player->EquipNewWeapon(this);
+
+}
+
+// Equip Start
+void AWeapon::EquipStart()
+{
+	if (!ThePlayer)return;
+
+	// Bp Equip Start
+	BP_Equip_Start();
+
+
+	AttachWeapon();
+
+	// Load Weapon Data from inventory
+	if (ThePlayer && ThePlayer->TheInventory)
+	{
+		for (int32 i = 0; i < ThePlayer->TheInventory->Items.Num(); i++)
 		{
-			case EWeaponArchetype::Main:
+
+			if (ThePlayer->TheInventory->Items.IsValidIndex(i) &&
+				ThePlayer->TheInventory->Items[i].Archetype &&
+				ThePlayer->TheInventory->Items[i].Archetype->GetDefaultObject() &&
+				ThePlayer->TheInventory->Items[i].Archetype->GetDefaultObject()->GetClass() == GetClass())
 			{
-				AttachSocket = AttachSockets[0];
-				break;
-			}
-			case EWeaponArchetype::Secondary:
-			{
-				AttachSocket = AttachSockets[1];
-				break;
-			}
-			case EWeaponArchetype::Ultimate:
-			{
-				AttachSocket = AttachSockets[2];
+
+				WeaponData = ThePlayer->TheInventory->Items[i].TheWeaponData;
 				break;
 			}
 
 		}
 	}
 
+	// Delay equip end
+	FTimerHandle myHandle;
+	ThePlayer->GetWorldTimerManager().SetTimer(myHandle, this, &AWeapon::EquipEnd, EquipTime, false);
 
+	bEquiped = false;
 }
 
-float AWeapon::GetCurrentAmmoPercent()
+// Equip Ended
+void AWeapon::EquipEnd()
 {
-	if (WeaponData.ClipSize>0 && WeaponData.CurrentAmmo>0)
+	// BP equip Ended
+	BP_Equip_End();
+
+
+	bEquiped = true;
+	// Save Inventory
+	if (ThePlayer && ThePlayer->TheInventory)
 	{
-		return WeaponData.CurrentAmmo / WeaponData.ClipSize;
+		ThePlayer->TheInventory->UpdateInfo();
+		ThePlayer->TheInventory->SaveInventory();
+	}
+}
+
+// Unequip Start
+void AWeapon::UnEquipStart()
+{
+
+	// BP UnEquip Start
+	BP_Unequip_Start();
+
+	bEquiped = false;
+
+
+	// Save Weapon Data to inventory
+	if (ThePlayer && ThePlayer->TheInventory)
+	{
+		for (int32 i = 0; i < ThePlayer->TheInventory->Items.Num(); i++)
+		{
+
+			if (ThePlayer->TheInventory->Items.IsValidIndex(i) &&
+				ThePlayer->TheInventory->Items[i].Archetype &&
+				ThePlayer->TheInventory->Items[i].Archetype->GetDefaultObject() &&
+				ThePlayer->TheInventory->Items[i].Archetype->GetDefaultObject()->GetClass() == GetClass())
+			{
+
+				ThePlayer->TheInventory->Items[i].TheWeaponData=WeaponData;
+				break;
+			}
+
+		}
+
 	}
 
-	return 0;
+	//delay unequip End
+	FTimerHandle myHandle;
+	ThePlayer->GetWorldTimerManager().SetTimer(myHandle, this, &AWeapon::UnEquipEnd, EquipTime, false);
+
+	// Save the weapon stats
+	SaveCurrentWeaponStats();
+
 }
 
+// Unequip End
+void AWeapon::UnEquipEnd()
+{
+	// BP unequip End
+	BP_Unequip_End();
 
-bool AWeapon::FireStart_Validate()
-{
-	return true;
-}
-void AWeapon::FireStart_Implementation()
-{
-	if (CanShoot())
-	{
-		bFirePressed = true;
-		if (!GetWorldTimerManager().IsTimerActive(FireHandle))
-			GetWorldTimerManager().SetTimer(FireHandle, this, &AWeapon::PreFire, WeaponData.FireSpeed, true, 0);
-	}
 	
-	//printg("Fire Start");
-}
 
-bool AWeapon::FireEnd_Validate()
-{
-	return true;
-}
-void AWeapon::FireEnd_Implementation()
-{
-	bFirePressed = false;
-	//printg("Fire End");
-	//GetWorldTimerManager().ClearTimer(FireHandle);
-}
-
-
-/*
-bool AWeapon::Server_Fire_Validate()
-{
-	return true;
-}
-void AWeapon::Server_Fire_Implementation()
-{
-	BP_Server_Fire();
-}
-
-*/
-
-bool AWeapon::Global_Fire_Validate()
-{
-	return true;
-}
-void AWeapon::Global_Fire_Implementation()
-{
-	BP_Fire();
-}
-
-
-
-
-void AWeapon::PreFire()
-{
-	//Stopped Firing
-	if (!bFirePressed)
+	if (ThePlayer)
 	{
-		GetWorldTimerManager().ClearTimer(FireHandle);
-		return;
+		// Clear Weapon Ref
+		if (ThePlayer->MainWeapon == this)ThePlayer->MainWeapon = NULL;
+		if (ThePlayer->AltWeapon == this)ThePlayer->AltWeapon = NULL;
+
+		// Save Inventory
+		if (ThePlayer && ThePlayer->TheInventory)
+		{
+			ThePlayer->TheInventory->SaveInventory();
+			ThePlayer->TheInventory->UpdateInfo();
+		} 
 	}
 
-	// Not enough ammo
-	if (WeaponData.FireCost>0 && WeaponData.FireCost>WeaponData.CurrentAmmo)
-	{
-		GetWorldTimerManager().ClearTimer(FireHandle);
-
-		if (TheCar && Cast<ARagePlayerCar>(TheCar))
-			Cast<ARagePlayerCar>(TheCar)->UnequipWeapon((uint8)WeaponType);
 
 
-		//printr("Destroy Weapon. No Ammo");
-		
 
-		return;
-	}
 
-	// Call Function repetition
-	GetWorldTimerManager().SetTimer(FireHandle, this, &AWeapon::PreFire, WeaponData.FireSpeed, false);
-
-	// Actual Event
-	Fire();
-	//Global_Fire();
-	/*
-	//	Add Feedback to car
-	if (TheCar)
-	{
-		//printg("Add Force");
-		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorRotation().Vector()*1000, FColor::Green, false, 3, 0, 3);
-
-		TheCar->GetMesh()->AddForce(-1 * GetActorRotation().Vector()*WeaponFireFeedback);
-		//TheCar->GetMovementComponent()->
-	}
-	*/
-
-	//	Use ammo
-	UseAmmo();
-	
+	// Destroy the Weapon Actor
+	Destroy();
 }
+
+
+
+
+void AWeapon::AttachWeapon()
+{
+
+	if (ThePlayer)
+	{
+		if (AttachSocketName.ToString().Len()<1)
+		{
+			switch (WeaponType)
+			{
+				case EWeaponArchetype::Main:
+				{
+					AttachSocketName = "MainWeaponSocket";
+					break;
+				}
+				case EWeaponArchetype::Secondary:
+				{
+					AttachSocketName = "AltWeaponSocket";
+					break;
+				}
+				case EWeaponArchetype::Ultimate:
+				{
+					AttachSocketName = "UltimateWeaponSocket";
+					break;
+				}
+			}
+		}
+
+		TheStaticMeshComponent->AttachTo(ThePlayer->GetMesh(), AttachSocketName);
+	}
+
+}
+
+// Can Weapon and Player Fire
 bool AWeapon::CanShoot()
 {
+	if (!ThePlayer || !ThePlayer->CanShoot() || !bEquiped)return false;
+
 	return true;
 }
 
-bool AWeapon::HasAmmo()
+
+// Save Weapon Data
+void AWeapon::SaveCurrentWeaponStats()
 {
-	if (WeaponData.FireCost>0 && WeaponData.CurrentAmmo>WeaponData.FireCost )
+	if (!ThePlayer || !ThePlayer->TheInventory)return;
+
+	// Find Weapon data in item list
+	for (int32 i = 0; i < ThePlayer->TheInventory->Items.Num(); i++)
 	{
-		return true;
+
+		if (ThePlayer->TheInventory->Items.IsValidIndex(i) && ThePlayer->TheInventory->Items[i].Archetype->GetDefaultObject()->GetClass() == GetClass())
+		{
+			// Set The Inventory item data to this weapon data
+			ThePlayer->TheInventory->Items[i].TheWeaponData = WeaponData;
+			return;
+		}
 	}
-
-
-	return false;
-
 }
+
+// Use Fire Ammo
 void AWeapon::UseAmmo()
 {
-	if (WeaponData.FireCost>0)WeaponData.CurrentAmmo -= WeaponData.FireCost;
-}
-void AWeapon::AddAmmoValue(float AmmoNum)
-{
-	if (WeaponData.CurrentAmmo + AmmoNum> WeaponData.ClipSize)
-	{
-		WeaponData.CurrentAmmo = WeaponData.ClipSize;
-	}
-	else WeaponData.CurrentAmmo += AmmoNum;
+	// BP Ammo Used
+	BP_Ammo_Used();
+
+	// Substract Fire Cost
+	WeaponData.CurrentAmmo -= WeaponData.FireCost;
 }
 
-void AWeapon::AddAmmoPickup(AWeapon* WeaponPickup)
+// Add Ammo from weapon pointer
+void AWeapon::AddAmmo(AWeapon* weapAmmo)
 {
-	if (WeaponData.CurrentAmmo + WeaponPickup->WeaponData.CurrentAmmo > WeaponData.ClipSize)
+	if (weapAmmo)
 	{
-		WeaponData.CurrentAmmo = WeaponData.ClipSize;
+		WeaponData.AddAmmo(weapAmmo->WeaponData.CurrentAmmo);
 	}
-	else WeaponData.CurrentAmmo += WeaponPickup->WeaponData.CurrentAmmo;
+}
+
+// Add Ammo as a number
+void AWeapon::AddAmmo(float newAmmo)
+{
+	WeaponData.AddAmmo(newAmmo);
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AWeapon, WeaponData);
 }

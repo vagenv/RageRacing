@@ -1,4 +1,5 @@
-// Copyright 1998-2015 Epic Games, Inc. All Rights Reserved.
+// Copyright 2015 Vagen Ayrapetyan
+
 #pragma once
 #include "Vehicles/VehicleWheel.h"
 #include "RageWheelFront.generated.h"

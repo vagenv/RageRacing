@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2015 Vagen Ayrapetyan
 
 #pragma once
 
@@ -11,30 +11,20 @@ class RAGE_API AWeapon : public AItem
 {
 	GENERATED_BODY()
 
-	
-			/*
-		UFUNCTION(Reliable, Server, WithValidation)
-	
-		bool ADarkPlayer::ServerSetAnimID_Validate(uint8 AnimID){
-			return true;
-		}
-		void ADarkPlayer::ServerSetAnimID_Implementation(uint8 AnimID){
-			GlobalSetAnimID(AnimID);
-		}
-		, NetMulticast, Reliable,
-	*/
-
 
 public:
+
+
 	AWeapon(const class FObjectInitializer& PCIP);
-
-
-	//					Basic Events
 
 	virtual void BeginPlay() override;
 
 
+
+
 	//				 System Components
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		EWeaponArchetype WeaponType;
 
 
 	UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
@@ -43,118 +33,144 @@ public:
 
 
 
-	//				 System References
-
-	class ARageBaseCar* TheCar;
-
-
-	//				 Internal Events
-
-	UFUNCTION(Reliable, Server, WithValidation)
-		void FireStart();
-	UFUNCTION(Reliable, Server, WithValidation)
-		void FireEnd();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Weapon Event")
-		void BP_Fire();
-	UFUNCTION(BlueprintImplementableEvent, Category = "Weapon Event")
-		void BP_Server_Fire();
-
-	virtual void PreFire();
-	virtual void Fire(){ Global_Fire(); BP_Server_Fire(); };
-
-	/*
-	UFUNCTION(Reliable, Server, WithValidation)
-		void Server_Fire();
-		*/
-	UFUNCTION(Reliable, NetMulticast, WithValidation)
-		void Global_Fire();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		FName AttachSocketName = " ";
 
 
+	//      Fire Props
+
+	// Use Ammo on Fire
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		bool bUseAmmo = true;
+
+	// Main Fire Data
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		FWeaponData WeaponData;
+
+	// Weapon Equip Time
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		float EquipTime = 0.25;
+
+	// Weapon Reload Time
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		float ReloadTime = 0.6;
 
 
+	// Is Weapon Shooting
+	bool bShooting = false;
 
+	// Is Reloading
+	bool bReloading = false;
 
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Weapon")
-		float GetCurrentAmmoPercent();
-
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-		void AddAmmoValue(float AmmoAmount);
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-		void AddAmmoPickup(AWeapon* WeaponPickup);
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
-		void UseAmmo();
-
-	bool HasAmmo();
-
-
+	// Is Weapon Equiped
+	bool bEquiped = false;
 
 private:
 
-	FTimerHandle FireHandle;
-	bool CanShoot();
-	bool bShooting;
-	bool bFirePressed;
+	// Main Fire Timer Handle
+	FTimerHandle PreFireTimeHandle;
 
-	//				 Weapon Properties 
 
-	/////////////////////////////////////////////////////////////////////////////////
+
 public:
 
+	// The Actual Fire Event
+	virtual void Fire(){ BP_Fire(); }
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		EWeaponArchetype WeaponType;
+	// Check Everything before the actual fire Example: check ammo, check player state, use ammo , etc
+	virtual void PreFire();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		TArray<FName> AttachSockets;
+	// Player Pressed Fire
+	virtual void FireStart();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		FName AttachSocket="";
+	// Player Released Fire
+	virtual void FireEnd();
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		FBasicWeaponData WeaponData;
+	// Save the current/equiped weapon stats to inventory
+	void SaveCurrentWeaponStats();
 
-	/*
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float ClipSize=10;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float CurrentAmmo=5;
+	// Equip Started
+	virtual void EquipStart();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float FireDamage=10;
+	// Equip Ended
+	virtual void EquipEnd();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float FireSpeed=1;
+	// Unequip Started
+	virtual void UnEquipStart();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float FireCost=1;
+	// Unequip ended
+	virtual void UnEquipEnd();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float FireDistance=1200;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float WeaponFireFeedback = 0;
+	// Can Player Fire
+	virtual bool CanShoot();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		bool bRestoreAmmo = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float AmmoRestoreSpeed=0.0;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		float AmmoRestoreValue =0.0;
-	*/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		EAmmoDisplayType AmmoDisplayType;
+	// Use Main Fire Ammo
+	void UseAmmo();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-		bool DrawDebugData=false;
+
+	void AttachWeapon();
 
 
 
-	
+	// Add Ammo by numbers 
+	virtual void AddAmmo(float newAmmo);
+
+	// Add Ammo from weapon
+	virtual void AddAmmo(AWeapon* weapAmmo);
 
 
+
+	virtual void InventoryUse(class ARagePlayerCar* Player)override;
+
+
+	//				Blueprint Events 
+
+
+	// Hit Enemy Character
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_HitEnemy(FHitResult HitData);
+
+	// Blueprint Event:  Pre Fire
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_PreFire();
+
+	// Blueprint Event:  Fire
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_Fire();
+
+	// Blueprint Event:  Fire Pressed
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_FirePress_Start();
+
+	// Blueprint Event:  Fire  Released
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_FirePress_End();
+
+	// Blueprint Event:  Tried firing , but no ammo
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_NoAmmo();
+
+	// Blueprint Event:   Equip Start
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_Equip_Start();
+
+	// Blueprint Event:   Equip End
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_Equip_End();
+
+	// Blueprint Event:   UnEquip Start
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_Unequip_Start();
+
+	// Blueprint Event:   unEquip End
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_Unequip_End();
+
+	// Blueprint Event: Main Fire Ammo Used  
+	UFUNCTION(BlueprintImplementableEvent, Category = "Fire")
+		void BP_Ammo_Used();
 
 };

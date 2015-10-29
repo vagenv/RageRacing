@@ -15,49 +15,133 @@ enum class EWeaponArchetype : uint8
 
 };
 
-UENUM(BlueprintType)		//"BlueprintType" is essential to include
-enum class EAmmoDisplayType : uint8
+
+
+// Fire State Struct
+USTRUCT(BlueprintType)
+struct FEnergyData
 {
-	Digit						UMETA(DisplayName = "Numberical"),
-	Bar							UMETA(DisplayName = "Bar"),
+	GENERATED_USTRUCT_BODY()
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float MaxValue = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float CurrentValue = 50;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float RestoreSpeed = 0.1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float RestoreValue = 1;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float BoostMultiplier = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float BoostMinValue = 40;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float JumpMultiplier = 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		FVector2D JumpDirection = FVector2D(0.5, 1);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float BoostJumpSelectDelay = 0.3;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		float BoostJumpMinValue = 50;
+
+
+	void UseAllEnergy();
+	void UseEnergy(float Value);
+	void RestoreEnergy();
+	bool CanBoost();
+	bool CanJump();
+
 };
 
 
-
-
+// Fire State Struct
 USTRUCT(BlueprintType)
-struct FBasicWeaponData
+struct FWeaponData
+{
+	GENERATED_USTRUCT_BODY()
+
+
+
+	// Numer of bullets in clip
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+		float MaxAmmo = 10;
+
+	// Current number of bullets |  In current Magazine
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+		float CurrentAmmo = 8;
+
+	// Fire Damage
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+		float FireDamage = 1;
+
+	// Fire Speed
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+		float FireSpeed = 1;
+
+	// Cost of Fire
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+		float FireCost = 1;
+
+	// Fire Distance
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+		float FireDistance = 2500;
+
+	// Add amoo 
+	virtual void AddAmmo(float newAmmo);
+
+	// Can Reload
+	bool CanReload();
+
+	// Can Fire
+	bool CanFire();
+
+};
+
+
+// FIteData Struct
+USTRUCT(BlueprintType)
+struct FItemData
 {
 	GENERATED_USTRUCT_BODY()
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		class AWeapon* WeaponArchype;
+	// Item Name
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		FString ItemName;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		bool bUseAmmo = true;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		float ClipSize = 10;
+	//Item Icon
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		UTexture2D* ItemIcon;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		float CurrentAmmo = 5;
+	// Item Count
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		int32 ItemCount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		float FireDamage = 1;
+	// Ite Weight
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		float Weight;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		float FireSpeed = 1;
+	// Item Archtype/Blueprint
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		TSubclassOf<class AItem> Archetype;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		float FireCost = 1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		float FireDistance;
-
-	//virtual void AddAmmo(float newAmmo, int32 newClip);
+	// If Weapon , main fire data
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
+		FWeaponData TheWeaponData;
 
 
+	FItemData(){};
+	FItemData(TSubclassOf<class AItem> Item, FString newItemName = FString(""), UTexture2D* newItemIcon = NULL, float newWeight = 0.1, int32 newItemCount = 1);
+
+	// Set Item Data
+	void SetItemData(FItemData newData);
 };
+
+
 
 UCLASS()
 class RAGE_API URageData : public UObject

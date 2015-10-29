@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2015 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "Engine.h"
@@ -33,7 +33,6 @@ void AProjectileWeapon::Fire()
 				TheStaticMeshComponent->GetSocketLocation(TEXT("MuzzleFlashSocket")),
 				tempV.Rotation() );
 			theProjectile->TheWeapon = this;
-			theProjectile->TheCar = TheCar;
 
 			if (theProjectile)
 			{

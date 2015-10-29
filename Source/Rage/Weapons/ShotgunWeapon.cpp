@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2015 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "Engine.h"
@@ -39,7 +39,6 @@ void AShotgunWeapon::Fire()
 		offsetVector = GetActorRightVector()*localx*SpreadValue + GetActorUpVector()*localy*SpreadValue;
 
 
-		if (DrawDebugData)DrawDebugLine(GetWorld(), StartTrace, EndTrace + offsetVector, FColor::Red, false, 3, 0, 3);
 
 
 		// Perform trace to retrieve hit info
@@ -70,19 +69,5 @@ void AShotgunWeapon::Fire()
 
 
 	}
-
-
-
-
-	///////////////////////
-
-
-
-
-
-
-
-
-
 }
 

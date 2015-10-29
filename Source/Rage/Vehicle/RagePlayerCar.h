@@ -1,8 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2015 Vagen Ayrapetyan
 
 #pragma once
 
 #include "Vehicle/RageBaseCar.h"
+#include "RageData.h"
 #include "RagePlayerCar.generated.h"
 
 /**
@@ -14,307 +15,244 @@ class RAGE_API ARagePlayerCar : public ARageBaseCar
 	GENERATED_BODY()
 	
 
-	/** Spring arm that will offset the camera */
+	// Spring arm that will offset the camera 
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		USpringArmComponent* SpringArm;
 
-	/** Camera component that will be our viewpoint */
+	// Camera component that will be our viewpoint 
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		UCameraComponent* Camera;
 
-	/** Camera component for the In-Car view */
+	// Camera component for the In-Car view 
 	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 		UCameraComponent* InternalCamera;
 
 
-
-	/*
-		UFUNCTION(Reliable, Server, WithValidation)
-	
-		bool ADarkPlayer::ServerSetAnimID_Validate(uint8 AnimID){
-			return true;
-		}
-		void ADarkPlayer::ServerSetAnimID_Implementation(uint8 AnimID){
-			GlobalSetAnimID(AnimID);
-		}
-	
-	*/
-
 public:
 
+
+	/*
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+	UPROPERTY(VisibleDefaultsOnly, Category = "")
+	UFUNCTION(BlueprintImplementableEvent, Category = " ")
+	UFUNCTION(BlueprintCallable, Category = " ")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = " ")
+	*/
+
+
 	ARagePlayerCar();
-		/*
-
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
-
-		UFUNCTION(BlueprintImplementableEvent, Category = " ")
-
-		UFUNCTION(BlueprintCallable, Category = " ")
-
-		UFUNCTION(BlueprintCallable, BlueprintPure, Category = " ")
-
-		*/
-
 
 	virtual void BeginPlay() override;
 
 
-	void EquipDefaultWeapons();
+private:
+	// Equip Default Weapons
+	virtual void EquipDefaultWeapons()override;
 
+
+	// Boost Delay Timer
 	FTimerHandle BoostDelayTimerHandle;
 
 
-	/** The current speed as a string eg 10 km/h */
-	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-		FText SpeedDisplayString;
-
-	/** The current gear as a string (R,N, 1,2 etc) */
-	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-		FText GearDisplayString;
-
-	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-		/** The color of the incar gear text in forward gears */
-		FColor	GearDisplayColor;
-
-	/** The color of the incar gear text when in reverse */
-	UPROPERTY(Category = Display, VisibleDefaultsOnly, BlueprintReadOnly)
-		FColor	GearDisplayReverseColor;
-
-	/** Are we using incar camera */
-	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly)
-		bool bInCarCameraActive;
-
-	/** Are we in reverse gear */
-	UPROPERTY(Category = Camera, VisibleDefaultsOnly, BlueprintReadOnly)
-		bool bInReverseGear;
-
-	/** Initial offset of incar camera */
-	FVector InternalCameraOrigin;
-
-	// Begin Pawn interface
+	// Setup Input
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	// End Pawn interface
+	
 
 
-
-	/** Handle pressing forwards */
+	// Vertical Move  
 	virtual void MoveForward(float Val);
 
-
-
-
-	/** Handle pressing right */
+	//Horizontal Move
 	virtual void MoveRight(float Val);
-	/** Handle handbrake pressed */
-	void OnHandbrakePressed();
-	/** Handle handbrake released */
-	void OnHandbrakeReleased();
-	/** Switch between cameras */
+
+public:
+	// Switch between cameras 
+
+	UFUNCTION(BlueprintCallable, Category = "Camera")
 	virtual void OnToggleCamera();
 
-	static const FName LookUpBinding;
-	static const FName LookRightBinding;
+	// Are we using incar camera 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+		bool bThirdPersonCamera = true;
 
+	// The Controller
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	class APlayerController * ThePC;
 
-	/**
-	* Activate In-Car camera. Enable camera and sets visibility of incar hud display
-	*
-	* @param	bState true will enable in car view and set visibility of various
-	*/
-	virtual void EnableIncarView(const bool bState);
+	// The Inventory
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	class AInventory * TheInventory;
+	// The HUD
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
+	class ARageHUD* TheHUD;
 
-
-
-
-	/** Returns SpringArm subobject **/
-	FORCEINLINE virtual USpringArmComponent* GetSpringArm() const { return SpringArm; }
-	/** Returns Camera subobject **/
-	FORCEINLINE virtual UCameraComponent* GetCamera() const { return Camera; }
-	/** Returns InternalCamera subobject **/
-	FORCEINLINE virtual UCameraComponent* GetInternalCamera() const { return InternalCamera; }
-
+	// Current Item Pickup Selected
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	class AItemPickup * currentPickup;
 
 
 
-	// Inventory
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-		TArray<class AItem*> ItemList;
-
-
-	////////					  Weapon Part
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		TSubclassOf<class AWeapon> DefaultMainWeapon;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-		TSubclassOf<class AWeapon> DefaultAltWeapon;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class AWeapon* MainWeapon;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class AWeapon* AltWeapon;
+	// Current Item Pickup Selected
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		class AWeapon * PendingWeaponEquip;
+	// Current Item Pickup Selected
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		float WeaponSwitchDelay=0.1f;
+private :
+	void EquipPendingWeapon();
+public:
 
 
 
-	// Inventory
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
-		void BP_ItemPickedUp(class AItem* TheItem, TSubclassOf<class AItem>  TheSubClass);
-
-	void ItemPickup(TSubclassOf<class AItem>  TheItem);
 
 
+
+	// Inventory List Updated
 	void InventoryUpdated();
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
 		void BP_InventoryUpdated();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
-		TArray< class AItem* > GetAllItemList();
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
-		TArray< class AItem* > GetOnlyItemList();
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
-		TArray< class AItem* > GetMainWeaponList();
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Inventory")
-		TArray< class AItem* > GetAltWeaponList();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-		void SortInventory();
-
-
-	class ARageHUD* TheHUD;
-	/*
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-	TArray<FWeaponSlot> WeaponMainList;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-	TArray<FWeaponSlot> WeaponAltList;
-	*/
+		void PickupTheItemPickup();
+	
 
 
 
-	//////					 Energy Part
+	// Energy Data
+	UPROPERTY(Replicated,EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		FEnergyData TheEnergyData;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_MaxValue = 100;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_CurrentValue = 50;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_RestoreSpeed = 0.1;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_RestoreValue = 1;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_BoostMultiplier = 1;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_BoostMinValue = 40;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_JumpMultiplier = 1;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		FVector2D Energy_JumpDirection =FVector2D(0.5,1) ;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_BoostJumpSelectDelay=0.3;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		float Energy_BoostJumpMinValue= 50;
-
-
-
-
+	// Use All Energy
 	UFUNCTION(BlueprintCallable, Category = "Energy")
 		void UseAllEnergy();
+
+	// Use Some Energy
 	UFUNCTION(BlueprintCallable, Category = "Energy")
 		void UseEnergy(float Value);
 
+
+
+
+	// Check player state if he can fire
+	virtual bool CanShoot();
+
+	// Can Boost
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
 		bool CanBoost();
+
+	// Can Boost Jump
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
 		bool CanJump();
 
 
+
+	// Is the car turned over
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
+		bool IsTurnedOver();
+	// Turned Over Max Angle
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+		float TurnedOverValidAngle = 150;
+	// Turned Over Max Angle
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+		float TurnedOverValidVelocity = 200;
+
+	// Reset the car function
+	UFUNCTION(BlueprintCallable, Category = "TheCar")
+		void ResetCar();
+	// BP event when car was reseted
+	UFUNCTION(BlueprintImplementableEvent, Category = "TheCar")
+		void BP_CarWasReseted();
+
+	// Enable Energy Restore
 	UFUNCTION(BlueprintCallable, Category = "Energy")
 		void StartEneryRestore();
+
+	// Disable Energy Restore
 	UFUNCTION(BlueprintCallable, Category = "Energy")
 		void StopEneryRestore();
 
+private:
+	// Energy Restore Timer Handle
 	FTimerHandle EnergyRestoreHandle;
 
+	// Energy Restore Event
 	void Energy_Restore();
+public:
+	// Get Energy Percent
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
 		float GetEnergyPercent();
 
 
+	// Equip new Weapon
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void EquipNewWeapon(class AWeapon* TheWeapon);
 
+	// Unequip Weapon
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-		void UnequipWeapon(uint8 WeaponType);
+		void UnEquipWeapon(EWeaponArchetype WeaponType);
 
+	// Search new Weapon
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void SearchNewWeaponEquip();
 
 
 	// Bind External Calling
-
-	void ActionDown();
-	void ActionUp();
-
-	void AltActionDown();
-	void AltActionUp();
-
+private:
 	void Boost();
-	void BoostDown();
-	void BoostUp();
-
-
-	void NextAction();
-	void NextAltAction();
-	
 
 	void DoubleJump();
 
-protected:
-
-	// Callabale action Events
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_ActionDown();
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_ActionUp();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_NextAction();
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_NextAltAction();
+	void FireStart();
+	void FireEnd();
 
 
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_AltActionDown();
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_AltActionUp();
+	void AltFireStart();
+	void AltFireEnd();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_BoostDown();
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+public:
+
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void AddInput_FireStart();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void AddInput_FireEnd();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void AddInput_AltFireStart();
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+		void AddInput_AltFireEnd();
+
+
+
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Boost")
 		void BP_Boost();
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
-		void BP_BoostUp();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Boost")
 		void BP_DoubleJump();
 
-	
 
-	/*
-	
-	UPROPERTY(EditAnywhere, Category = "Energy")
-		FRuntimeFloatCurve Energy_BoostCurve;
+	// When Item Is Used
+	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+		void BP_ItemUsed(class AItem* TheItem);
 
-	
-	*/
+	// When Item is dropped
+	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+		void BP_ItemDroped(class AItemPickup* thePickup);
+
+
+
+	// Returns SpringArm subobject 
+	FORCEINLINE virtual USpringArmComponent* GetSpringArm() const { return SpringArm; }
+
+	// Returns Camera subobject 
+	FORCEINLINE virtual UCameraComponent* GetCamera() const { return Camera; }
+
+	// Returns InternalCamera subobject 
+	FORCEINLINE virtual UCameraComponent* GetInternalCamera() const { return InternalCamera; }
+
+
 };

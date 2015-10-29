@@ -1,6 +1,8 @@
 Binaries/Win64/Rage.exp
 Binaries/Win64/Rage.lib
-Content/StarterContent/
+Binaries/Android
+Build/Android
+Content/StarterContent
 DerivedDataCache
 Intermediate
 Saved
@@ -15,5 +17,4 @@ Releases
 *-DebugGame.dll
 *.log
 *.target.xml
-
 

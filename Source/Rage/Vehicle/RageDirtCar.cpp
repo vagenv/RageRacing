@@ -1,3 +1,4 @@
+// Copyright 2015 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "Engine.h"
@@ -32,12 +33,6 @@ ARageDirtCar::ARageDirtCar()
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 	GetMesh()->SetAnimInstanceClass(AnimBPClass.Class);
 
-	// Setup friction materials
-	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SlipperyMat(TEXT("/Game/VehicleAdv/PhysicsMaterials/Slippery.Slippery"));
-	SlipperyMaterial = SlipperyMat.Object;
-
-	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> NonSlipperyMat(TEXT("/Game/VehicleAdv/PhysicsMaterials/NonSlippery.NonSlippery"));
-	NonSlipperyMaterial = NonSlipperyMat.Object;
 
 	UWheeledVehicleMovementComponent4W* Vehicle4W = CastChecked<UWheeledVehicleMovementComponent4W>(GetVehicleMovement());
 
@@ -108,30 +103,8 @@ ARageDirtCar::ARageDirtCar()
 	Vehicle4W->InertiaTensorScale = FVector(1.0f, 1.333f, 1.2f);
 
 
-	// In car HUD
-	// Create text render component for in car speed display
-	InCarSpeed = CreateDefaultSubobject<UTextRenderComponent>(TEXT("IncarSpeed"));
-	InCarSpeed->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
-	InCarSpeed->SetRelativeLocation(FVector(35.0f, -6.0f, 20.0f));
-	InCarSpeed->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
-	InCarSpeed->AttachTo(GetMesh());
-
-	// Create text render component for in car gear display
-	InCarGear = CreateDefaultSubobject<UTextRenderComponent>(TEXT("IncarGear"));
-	InCarGear->SetRelativeScale3D(FVector(0.1f, 0.1f, 0.1f));
-	InCarGear->SetRelativeLocation(FVector(35.0f, 5.0f, 20.0f));
-	InCarGear->SetRelativeRotation(FRotator(0.0f, 180.0f, 0.0f));
-	InCarGear->AttachTo(GetMesh());
-
-
-
-	// Colors for the in-car gear display. One for normal one for reverse
-	GearDisplayReverseColor = FColor(255, 0, 0, 255);
-	GearDisplayColor = FColor(255, 255, 255, 255);
 
 	bIsLowFriction = false;
-	bInReverseGear = false;
-
 
 
 }
@@ -139,75 +112,15 @@ ARageDirtCar::ARageDirtCar()
 void ARageDirtCar::BeginPlay()
 {
 	Super::BeginPlay();
-	InCarSpeed->SetVisibility(bInCarCameraActive);
-	InCarGear->SetVisibility(bInCarCameraActive);
-}
-
-void ARageDirtCar::Tick(float deltaTime)
-{
-	Super::Tick(deltaTime);
-	// Set the string in the incar hud
-	SetupInCarHUD();
-
-
-	// Update the strings used in the hud (incar and onscreen)
-	UpdateHUDStrings();
 }
 
 
 
 
-void ARageDirtCar::EnableIncarView(const bool bState)
-{
-
-	Super::EnableIncarView(bState);
-
-
-	InCarSpeed->SetVisibility(bInCarCameraActive);
-	InCarGear->SetVisibility(bInCarCameraActive);
-
-}
-
-
-
-void ARageDirtCar::SetupInCarHUD()
-{
-	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	if ((PlayerController != nullptr) && (InCarSpeed != nullptr) && (InCarGear != nullptr))
-	{
-		// Setup the text render component strings
-		InCarSpeed->SetText(SpeedDisplayString);
-		InCarGear->SetText(GearDisplayString);
-
-		//printg("Set HUD text");
-		if (bInReverseGear == false)
-		{
-			InCarGear->SetTextRenderColor(GearDisplayColor);
-		}
-		else
-		{
-			InCarGear->SetTextRenderColor(GearDisplayReverseColor);
-		}
-	}
-}
-
+/*
 
 void ARageDirtCar::UpdateHUDStrings()
 {
-	float KPH = FMath::Abs(GetVehicleMovement()->GetForwardSpeed()) * 0.036f;
-	int32 KPH_int = FMath::FloorToInt(KPH);
 
-	// Using FText because this is display text that should be localizable
-	SpeedDisplayString = FText::Format(LOCTEXT("SpeedFormat", "{0} km/h"), FText::AsNumber(KPH_int));
-
-	//printg("Update HUD string value");
-	if (bInReverseGear == true)
-	{
-		GearDisplayString = FText(LOCTEXT("ReverseGear", "R"));
-	}
-	else
-	{
-		int32 Gear = GetVehicleMovement()->GetCurrentGear();
-		GearDisplayString = (Gear == 0) ? LOCTEXT("N", "N") : FText::AsNumber(Gear);
-	}
 }
+*/

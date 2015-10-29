@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2015 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "Engine.h"
@@ -25,9 +25,6 @@ void ARifleWeapon::Fire()
 	TraceParams.bTraceAsyncScene = true;
 	TraceParams.bReturnPhysicalMaterial = true;
 	TraceParams.AddIgnoredActor(GetOwner());
-
-
-	if (DrawDebugData)DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Red, false, 3, 0, 3);
 
 	//print("Fire Event");
 	FHitResult Hit(ForceInit);
