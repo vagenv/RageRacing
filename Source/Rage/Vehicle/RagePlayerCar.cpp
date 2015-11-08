@@ -49,6 +49,10 @@ ARagePlayerCar::ARagePlayerCar()
 	InternalCamera->SetRelativeLocation(FVector(-34.0f, 0.0f, 50.0f));
 	InternalCamera->AttachTo(GetMesh());
 
+
+	TheInventory = CreateDefaultSubobject<UInventory>(TEXT("TheInventory"));
+	TheInventory->SetIsReplicated(true);
+
 }
 
 
@@ -57,9 +61,15 @@ void ARagePlayerCar::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (Role>=ROLE_Authority && !TheInventory)
+	if (Role>=ROLE_Authority)
 	{
-		TheInventory=GetWorld()->SpawnActor<AInventory>();
+		if (!TheInventory)
+		{
+			printr("No Inventory");
+			TheInventory = GetWorld()->SpawnActor<UInventory>();
+		}
+			
+	
 		if (TheInventory)
 		{
 			TheInventory->ThePlayer = this;
@@ -67,10 +77,11 @@ void ARagePlayerCar::BeginPlay()
 			for (int32 i = 0; i < DefaultInventoryItems.Num(); i++)
 			{
 				if (DefaultInventoryItems.IsValidIndex(i))
-					TheInventory->AddNewItem(DefaultInventoryItems[i]);
+					TheInventory->AddItem(DefaultInventoryItems[i]);
 			}
 		}
 
+		
 
 
 		// Get Player Controller
@@ -79,13 +90,30 @@ void ARagePlayerCar::BeginPlay()
 			ThePC = Cast<APlayerController>(GetController());
 		}
 
-		// Get HUd Reference
+		// Get HUD Reference
 		if (ThePC && ThePC->GetHUD() && Cast<ARageHUD>(ThePC->GetHUD()))
 			TheHUD = Cast<ARageHUD>(ThePC->GetHUD());
 
 	}
 
 	StartEneryRestore();
+
+	FTimerHandle MyHandle;
+	GetWorldTimerManager().SetTimer(MyHandle, this, &ARagePlayerCar::PostBeginPlay, 1, false);
+
+}
+
+void ARagePlayerCar::PostBeginPlay()
+{
+	// Get Player Controller
+	if (!ThePC && GetController() && Cast<APlayerController>(GetController()))
+	{
+		ThePC = Cast<APlayerController>(GetController());
+	}
+
+	// Get HUD Reference
+	if (!TheHUD && ThePC && ThePC->GetHUD() && Cast<ARageHUD>(ThePC->GetHUD()))
+		TheHUD = Cast<ARageHUD>(ThePC->GetHUD());
 }
 
 // If car is in state to fire
@@ -141,8 +169,8 @@ void ARagePlayerCar::SetupPlayerInputComponent(class UInputComponent* InputCompo
 	// set up gameplay key bindings
 	check(InputComponent);
 
-	InputComponent->BindAxis("MoveForward", this, &ARagePlayerCar::MoveForward);
-	InputComponent->BindAxis("MoveRight", this, &ARagePlayerCar::MoveRight);
+	InputComponent->BindAxis("MoveForward", this, &ARagePlayerCar::AddVerticalInput);
+	InputComponent->BindAxis("MoveRight", this, &ARagePlayerCar::AddHorizontalInput);
 
 
 	InputComponent->BindAction("SwitchCamera", IE_Pressed, this, &ARagePlayerCar::OnToggleCamera);
@@ -161,14 +189,14 @@ void ARagePlayerCar::SetupPlayerInputComponent(class UInputComponent* InputCompo
 
 
 // Add Vertical Input
-void ARagePlayerCar::MoveForward(float Val)
+void ARagePlayerCar::AddVerticalInput(float Val)
 {
 	GetVehicleMovementComponent()->SetThrottleInput(Val);
 
 }
 
 // Add Horizontal
-void ARagePlayerCar::MoveRight(float Val)
+void ARagePlayerCar::AddHorizontalInput(float Val)
 {
 	GetVehicleMovementComponent()->SetSteeringInput(Val);
 }
@@ -313,7 +341,8 @@ void ARagePlayerCar::ResetCar()
 	FTransform CurrentTransform = GetTransform();
 
 }
-
+/*
+*/
 
 
 // Check if can boos

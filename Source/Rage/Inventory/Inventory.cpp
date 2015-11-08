@@ -16,20 +16,23 @@
 #include "UnrealNetwork.h"
 
 
-AInventory::AInventory(const class FObjectInitializer& PCIP)
+UInventory::UInventory()
 {
-	RootComponent = PCIP.CreateDefaultSubobject<USceneComponent>(this, TEXT("RootComponent"));
-	bReplicates = true;
+	bWantsBeginPlay = true;
 }
 
 
-void AInventory::BeginPlay()
+void UInventory::BeginPlay()
 {
 	Super::BeginPlay();
+	SetIsReplicated(true);
+
+	if (!ThePlayer&& Cast<ARagePlayerCar>(GetOwner()))
+		ThePlayer = Cast<ARagePlayerCar>(GetOwner());
 }
 
 // Use Item With Index
-void AInventory::ActionIndex(int32 ItemIndex)
+void UInventory::ActionIndex(int32 ItemIndex)
 {
 	if (Items.IsValidIndex(ItemIndex) && Items[ItemIndex].Archetype && Items[ItemIndex].Archetype->GetDefaultObject<AItem>())
 	{
@@ -38,7 +41,7 @@ void AInventory::ActionIndex(int32 ItemIndex)
 }
 
 // Use Item With Ref
-void AInventory::Action(AItem* ItemRef)
+void UInventory::Action(AItem* ItemRef)
 {
 	if (!ItemRef || !ThePlayer)
 		return;
@@ -51,7 +54,7 @@ void AInventory::Action(AItem* ItemRef)
 
 
 // Thow out item with index
-void AInventory::ThrowOutIndex(int32 ItemIndex)
+void UInventory::ThrowOutIndex(int32 ItemIndex)
 {
 
 	// Inside the list of items
@@ -71,7 +74,7 @@ void AInventory::ThrowOutIndex(int32 ItemIndex)
 		{
 			// Get Player Rotation
 			FRotator rot = ThePlayer->GetActorRotation();
-			FVector spawnLoc = GetActorLocation()+FVector(0,0,100);
+			FVector spawnLoc =  GetOwner()->GetActorLocation()+FVector(0,0,100);
 
 
 			AItemPickup* newPickup;
@@ -147,7 +150,7 @@ void AInventory::ThrowOutIndex(int32 ItemIndex)
 
 
 // Throw ou item by pointer
-void AInventory::ThrowOut(AItem* ItemRef)
+void UInventory::ThrowOut(AItem* ItemRef)
 {
 	// Find the item from items list
 	for (int32 i = 0; i < Items.Num(); i++)
@@ -161,7 +164,7 @@ void AInventory::ThrowOut(AItem* ItemRef)
 }
 
 // Item Picked up from the pickup
-void AInventory::ItemPickedUp(AItemPickup* ThePickup)
+void UInventory::ItemPickedUp(AItemPickup* ThePickup)
 {
 	if (!ThePickup || !ThePickup->Item)
 		return;
@@ -195,7 +198,7 @@ void AInventory::ItemPickedUp(AItemPickup* ThePickup)
 
 
 // Add subclass of item to inventory 
-FItemData* AInventory::AddItem(TSubclassOf<AItem> newItem)
+FItemData* UInventory::AddItem(TSubclassOf<AItem> newItem)
 {
 	if (newItem == NULL)
 		return NULL;
@@ -280,12 +283,12 @@ FItemData* AInventory::AddItem(TSubclassOf<AItem> newItem)
 }
 
 // Same as AddItem but with value struct return
-FItemData AInventory::AddNewItem(TSubclassOf<AItem> newItem)
+FItemData UInventory::AddNewItem(TSubclassOf<AItem> newItem)
 {
 	return *(AddItem(newItem));
 }
 // Remp with ID
-void AInventory::RemoveItemIndex(int32 ItemID)
+void UInventory::RemoveItemIndex(int32 ItemID)
 {
 	if (!Items.IsValidIndex(ItemID))return;
 	Items.RemoveAt(ItemID);
@@ -293,7 +296,7 @@ void AInventory::RemoveItemIndex(int32 ItemID)
 }
 
 // Remove Item with ref
-void AInventory::RemoveItem(AItem* DeleteItem)
+void UInventory::RemoveItem(AItem* DeleteItem)
 {
 	if (!DeleteItem)return;
 
@@ -313,7 +316,7 @@ void AInventory::RemoveItem(AItem* DeleteItem)
 
 
 // Inventory Updated
-void AInventory::UpdateInfo()
+void UInventory::UpdateInfo()
 {
 
 	//printg("Update Info");
@@ -337,14 +340,14 @@ void AInventory::UpdateInfo()
 }
 
 // Update Item List, Called on client
-void AInventory::ClientReceiveUpdatedItemList()
+void UInventory::ClientReceiveUpdatedItemList()
 {
 	if (ThePlayer && ThePlayer->TheHUD)
 		ThePlayer->TheHUD->BP_InventoryUpdated();
 }
 
 // Load Inventory
-void AInventory::LoadInventory()
+void UInventory::LoadInventory()
 {
 	// Find Game Mode and Save FIle
 	if (GetWorld() && GetWorld()->GetAuthGameMode())
@@ -356,10 +359,10 @@ void AInventory::LoadInventory()
 		}
 	}
 	// Error With Game Mode or Save file ref, retry after 0.5 sec
-	if (!TheGM || !TheGM->SaveFile)
+	if (!TheGM || !TheGM->SaveFile && GetOwner())
 	{
 		FTimerHandle MyHandle;
-		GetWorldTimerManager().SetTimer(MyHandle, this, &AInventory::LoadInventory, 0.5, false);
+		GetOwner()->GetWorldTimerManager().SetTimer(MyHandle, this, &UInventory::LoadInventory, 0.5, false);
 	}
 
 	// Set Inventory Items data to items data from save file
@@ -367,7 +370,7 @@ void AInventory::LoadInventory()
 }
 
 // Save Inventory
-void AInventory::SaveInventory()
+void UInventory::SaveInventory()
 {
 	// Save current weapon stats
 	//if (ThePlayer && ThePlayer->TheWeapon)ThePlayer->TheWeapon->SaveCurrentWeaponStats();
@@ -376,10 +379,10 @@ void AInventory::SaveInventory()
 	if (TheGM && TheGM->SaveFile)TheGM->SaveFile->Items = Items;
 }
 
-void AInventory::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+void UInventory::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AInventory, Items);
-	DOREPLIFETIME(AInventory, TotalWeight);
-	DOREPLIFETIME(AInventory, ThePlayer);
+	DOREPLIFETIME(UInventory, Items);
+	DOREPLIFETIME(UInventory, TotalWeight);
+	DOREPLIFETIME(UInventory, ThePlayer);
 }

@@ -64,6 +64,9 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Rage Status")
 		float Health = 50;
 
+	UFUNCTION(BlueprintCallable, Category = "Rage Status")
+		virtual void AddHealth(float AddValue);
+
 	UPROPERTY(Replicated)
 		bool bDead;
 

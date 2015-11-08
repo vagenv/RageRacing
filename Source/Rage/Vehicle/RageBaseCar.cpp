@@ -76,6 +76,14 @@ void ARageBaseCar::Tick(float Delta)
 }
 
 
+// Add Health to player
+void ARageBaseCar::AddHealth(float AddValue)
+{
+	if (Health + AddValue <= MaxHealth)
+		Health += AddValue;
+	else Health = MaxHealth;
+}
+
 // Get Health Percent
 float ARageBaseCar::GetHealthPercent()
 {

@@ -44,6 +44,7 @@ public:
 	ARagePlayerCar();
 
 	virtual void BeginPlay() override;
+	virtual void PostBeginPlay();
 
 
 private:
@@ -59,14 +60,20 @@ private:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	
 
+public:
+
 
 	// Vertical Move  
-	virtual void MoveForward(float Val);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void AddVerticalInput(float Val);
 
 	//Horizontal Move
-	virtual void MoveRight(float Val);
+	UFUNCTION(BlueprintCallable, Category = "Input")
+	virtual void AddHorizontalInput(float Val);
 
-public:
+
+
+
 	// Switch between cameras 
 
 	UFUNCTION(BlueprintCallable, Category = "Camera")
@@ -82,7 +89,7 @@ public:
 
 	// The Inventory
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Inventory")
-	class AInventory * TheInventory;
+	class UInventory * TheInventory;
 	// The HUD
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
 	class ARageHUD* TheHUD;

@@ -1,19 +1,19 @@
 // Copyright 2015 Vagen Ayrapetyan
 #pragma once
 
-#include "GameFramework/Actor.h"
+
+#include "Components/ActorComponent.h"
 #include "RageData.h"
 #include "Inventory.generated.h"
 
-
-UCLASS()
-class RAGE_API AInventory : public AActor
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class RAGE_API UInventory:public UActorComponent
 {
 	GENERATED_BODY()
 public:
 
 	// Base events
-	AInventory(const class FObjectInitializer& PCIP);
+	UInventory();
 
 
 	virtual void BeginPlay() override;
