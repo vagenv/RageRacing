@@ -1,6 +1,7 @@
 // Copyright 2015 Vagen Ayrapetyan
 
 #include "Rage.h"
+#include "Engine.h"
 
 #include "Vehicle/RageBaseCar.h"
 #include "Wheels/RageWheelFront.h"
@@ -16,6 +17,7 @@
 
 #include "UnrealNetwork.h"
 
+#include "Components/WidgetComponent.h"
 
 const FName ARageBaseCar::EngineAudioRPM("RPM");
 
@@ -23,18 +25,13 @@ const FName ARageBaseCar::EngineAudioRPM("RPM");
 
 ARageBaseCar::ARageBaseCar()
 {
-//	RootComponent=CreateDefaultSubobject<USceneComponent>(TEXT("TheRoot"));
-	//GetMesh()->AttachParent = RootComponent;
 	RootComponent = GetMesh();
 	
-
-
 	// Setup the audio component and allocate it a sound cue
 	static ConstructorHelpers::FObjectFinder<USoundCue> SoundCue(TEXT("/Game/VehicleAdv/Sound/Engine_Loop_Cue.Engine_Loop_Cue"));
 	EngineSoundComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("EngineSound"));
 	EngineSoundComponent->SetSound(SoundCue.Object);
 	EngineSoundComponent->AttachTo(GetMesh());
-
 
 
 	// Setup friction materials
@@ -43,6 +40,20 @@ ARageBaseCar::ARageBaseCar()
 
 	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> NonSlipperyMat(TEXT("/Game/VehicleAdv/PhysicsMaterials/NonSlippery.NonSlippery"));
 	NonSlipperyMaterial = NonSlipperyMat.Object;
+
+
+	CharacterStatusWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Player Status Widget"));
+	CharacterStatusWidget->AttachParent = GetMesh();
+	CharacterStatusWidget->bOwnerNoSee = true;
+
+	CharacterName = "Base Character";
+
+	FRichCurve* RichZoomCurve = CharacterStatusWidget_ZoomCurve.GetRichCurve();
+	if (RichZoomCurve)
+	{
+		RichZoomCurve->AddKey(1000, 1);
+		RichZoomCurve->AddKey(5000, 4);
+	}
 
 }
 
@@ -56,18 +67,52 @@ void ARageBaseCar::BeginPlay()
 	EngineSoundComponent->Play();
 
 
-	FTimerHandle MyHandle;
-	GetWorldTimerManager().SetTimer(MyHandle, this, &ARageBaseCar::EquipDefaultWeapons, 2, false);
+	TheLocalController=UGameplayStatics::GetPlayerController(GetWorld(), 0);
+
+
+	FVector PositionOffset = FVector(FMath::RandRange(-200, 200), FMath::RandRange(-200, 200),0);
+	SetActorLocation(GetActorLocation()+PositionOffset);
+
+	if (CharacterStatusWidget)
+		CharacterStatusWidget_DefaultOffset = CharacterStatusWidget->RelativeLocation;
+
+	if (Role >= ROLE_Authority)
+	{
+
+		FTimerHandle MyHandle;
+		GetWorldTimerManager().SetTimer(MyHandle, this, &ARageBaseCar::EquipDefaultWeapons, 1, false);
+
+
+		if (bRandomizeCharacterColorOnStart)
+			CharacterColor = FLinearColor(FMath::RandRange(0, 255), FMath::RandRange(0, 255), FMath::RandRange(0, 255));
+	}
+
+	// Delay Post begin play after 1 sec
+	FTimerHandle PostBeginHandle;
+	GetWorldTimerManager().SetTimer(PostBeginHandle, this, &ARageBaseCar::PostBeginPlay, 1, false);
+
 }
 
-// The Tick
+//		Post Begin Play
+void ARageBaseCar::PostBeginPlay()
+{
+	// Refind The Controller
+	//if (!TheLocalController)
+	//	TheLocalController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+}
+
+
+//		 The Tick
 void ARageBaseCar::Tick(float Delta)
 {
-
 	Super::Tick(Delta);
 	
 	// Update phsyics material
 	UpdatePhysicsMaterial();
+
+	//Rotate Widget To Camera;
+	if (CharacterStatusWidget && TheLocalController)
+		RotateCharacterStatusWidget();
 
 
 	// Pass the engine RPM to the sound component
@@ -76,23 +121,30 @@ void ARageBaseCar::Tick(float Delta)
 }
 
 
-// Add Health to player
-void ARageBaseCar::AddHealth(float AddValue)
+//		Rotate Widget To camera
+void ARageBaseCar::RotateCharacterStatusWidget()
 {
-	if (Health + AddValue <= MaxHealth)
-		Health += AddValue;
-	else Health = MaxHealth;
+	if (!CharacterStatusWidget || !TheLocalController) return;
+
+	if (TheLocalController->PlayerCameraManager)
+	{
+		// Set Widget on top of the car
+		CharacterStatusWidget->SetWorldLocation(GetActorLocation() + CharacterStatusWidget_DefaultOffset);
+
+		// Set Scale on the widget. Take distance between car and camera-> feed to curve
+		CharacterStatusWidget->RelativeScale3D = FVector(CharacterStatusWidget_ZoomCurve.GetRichCurve()->Eval(FVector::Dist(GetActorLocation(), TheLocalController->PlayerCameraManager->GetCameraLocation())));
+		
+		// Get Camera vector
+		FVector CamForwardVec = TheLocalController->PlayerCameraManager->GetActorForwardVector();
+		// Flip Direction
+		CamForwardVec *= -1;
+
+		// Set Widget Rot
+		CharacterStatusWidget->SetWorldRotation(CamForwardVec.Rotation());
+		
+	} 
 }
 
-// Get Health Percent
-float ARageBaseCar::GetHealthPercent()
-{
-	if (Health>=0 && MaxHealth>0 )
-	{
-		return Health / MaxHealth;
-	}
-	return 0;
-}
 
 // Update Physics material
 void ARageBaseCar::UpdatePhysicsMaterial()
@@ -111,7 +163,6 @@ void ARageBaseCar::UpdatePhysicsMaterial()
 		}
 	}
 
-
 }
 
 // Take Damage
@@ -123,11 +174,11 @@ float ARageBaseCar::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 
 	Health -= DamageAmount;
 
-	// Death Event
 	if (Health <= 0)
 	{
 		Health = 0;
-		Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+		Death();
 		//ServerDie();
 	}
 
@@ -135,6 +186,79 @@ float ARageBaseCar::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 }
 
+// Add Health to player
+void ARageBaseCar::AddHealth(float AddValue)
+{
+	if (Health + AddValue <= MaxHealth)
+		Health += AddValue;
+	else Health = MaxHealth;
+}
+
+
+void ARageBaseCar::Death()
+{
+	bDead = true;
+
+	SetActorHiddenInGame(true);
+	CharacterStatusWidget->Deactivate();
+	if (MainWeapon)MainWeapon->SetActorHiddenInGame(true);
+	if (AltWeapon)AltWeapon->SetActorHiddenInGame(true);
+
+	BP_Death();
+	Global_Death();
+
+	if (bCanRevive)
+	{
+
+		SetActorEnableCollision(false);
+		SetActorLocation(FVector::ZeroVector, false, NULL, ETeleportType::TeleportPhysics);
+		if(GetMesh())GetMesh()->SetEnableGravity(false);
+		//if (GetMesh())GetMesh()->SetCollisionProfileName("NoCollision");
+		FTimerHandle MyHandle;
+		GetWorldTimerManager().SetTimer(MyHandle, this, &ARageBaseCar::Revive, ReviveTime, false);
+	}
+	else Destroy();
+	//printr("DIE ");
+
+}
+void ARageBaseCar::Global_Death_Implementation()
+{
+
+}
+void ARageBaseCar::Revive()
+{
+	bDead = false;
+	Health = MaxHealth / 2;
+	CharacterStatusWidget->Activate();
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	if (GetMesh())GetMesh()->SetEnableGravity(true);
+	if (MainWeapon)MainWeapon->SetActorHiddenInGame(false);
+	if (AltWeapon)AltWeapon->SetActorHiddenInGame(false);
+
+
+//	GetMesh()->COllision
+	//if (GetMesh())GetMesh()->SetCollisionProfileName("Vehicle");
+	//if (GetMesh())GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+	BP_Revive();
+	Global_Revive();
+}
+void ARageBaseCar::Global_Revive_Implementation()
+{
+
+}
+
+
+// Get Health Percent
+float ARageBaseCar::GetHealthPercent()
+{
+	if (Health>0 && MaxHealth>0)
+	{
+		return Health / MaxHealth;
+	}
+	return 0;
+}
 
 // Get Move Speed
 int32 ARageBaseCar::GetMoveSpeed()
@@ -172,8 +296,10 @@ int32 ARageBaseCar::GetGearState()
 void ARageBaseCar::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-
+	
+	DOREPLIFETIME(ARageBaseCar, CharacterName);
+	DOREPLIFETIME(ARageBaseCar, CharacterColor);
+	DOREPLIFETIME(ARageBaseCar, Health);
 	DOREPLIFETIME(ARageBaseCar, bDead);
 	DOREPLIFETIME(ARageBaseCar, MainWeapon);
 	DOREPLIFETIME(ARageBaseCar, AltWeapon);

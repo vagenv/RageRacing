@@ -7,12 +7,16 @@
 #include "Vehicle/RageBaseCar.h"
 #include "RageHUD.h"
 */
-#include "Custom/SystemSaveGame.h"
+#include "System/SystemSaveGame.h"
+#include "System/RagePlayerState.h"
+#include "System/RageGameState.h"
 
 ARageGameMode::ARageGameMode()
 {
 	//DefaultPawnClass = ARageBaseCar::StaticClass();
 	//HUDClass = ARageHUD::StaticClass();
+	PlayerStateClass = ARagePlayerState::StaticClass();
+	GameStateClass = ARageGameState::StaticClass();
 }
 
 
@@ -23,7 +27,8 @@ void ARageGameMode::BeginPlay()
 
 	// Start Post begin delay
 	FTimerHandle MyHandle;
-	GetWorldTimerManager().SetTimer(MyHandle, this, &ARageGameMode::PostBeginPlay, 0.1f, false);
+	GetWorldTimerManager().SetTimer(MyHandle, this, &ARageGameMode::PostBeginPlay, 0.5f, false);
+
 
 }
 

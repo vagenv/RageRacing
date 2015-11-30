@@ -7,6 +7,18 @@ public class Rage : ModuleRules
 {
 	public Rage(TargetInfo Target)
 	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay" });
+        MinFilesUsingPrecompiledHeaderOverride = 1;
+        bFasterWithoutUnity = true;
+
+
+
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HTTP", "OnlineSubsystem" , "OnlineSubsystemUtils" ,"UMG"});
+
+        //Uncomment if you are using online features
+        PrivateDependencyModuleNames.Add("OnlineSubsystem"); 
+
+        DynamicallyLoadedModuleNames.Add("OnlineSubsystemNull");
+     
+
 	}
 }

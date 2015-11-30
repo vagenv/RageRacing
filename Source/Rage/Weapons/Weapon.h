@@ -21,17 +21,13 @@ public:
 
 
 
-
 	//				 System Components
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		EWeaponArchetype WeaponType;
 
-
+	// Weapon Static Mesh
 	UPROPERTY(Category = "Mesh", VisibleDefaultsOnly, BlueprintReadOnly)
 		UStaticMeshComponent* TheStaticMeshComponent;
-
-
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		FName AttachSocketName = " ";
@@ -110,8 +106,11 @@ public:
 	// Use Main Fire Ammo
 	void UseAmmo();
 
-
+	// Attach Weapon to The Car
 	void AttachWeapon();
+
+	// Called on client when weapon was updated
+	void ClientWeaponUpdated();
 
 
 
@@ -122,7 +121,7 @@ public:
 	virtual void AddAmmo(AWeapon* weapAmmo);
 
 
-
+	// Item used in inventory
 	virtual void InventoryUse(class ARagePlayerCar* Player)override;
 
 

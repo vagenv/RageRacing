@@ -3,7 +3,11 @@
 #ifndef __RageADV_H__
 #define __RageADV_H__
 
-#include "EngineMinimal.h"
+
+#include "Engine.h"
+#include "UnrealNetwork.h"
+#include "Online.h"
+#include "OnlineSubsystem.h"
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 3, FColor::Black,text)
 #define printw(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 3, FColor::White,text)

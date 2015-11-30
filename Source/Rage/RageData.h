@@ -6,6 +6,64 @@
 #include "RageData.generated.h"
 
 
+
+
+USTRUCT(BlueprintType)
+struct FRageOninePlayerData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FString PlayerName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FLinearColor PlayerColor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		float CurrentHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		class ARagePlayerCar* ThePlayer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		int32 KillCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		int32 DeathCount;
+
+	FRageOninePlayerData(){};
+	FRageOninePlayerData(class ARagePlayerCar* NewPlayer);
+
+
+};
+
+USTRUCT(BlueprintType)
+struct FRageOnineMessageData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FString TheMessage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FString MessageOwner;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FDateTime MessageTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FLinearColor MessageColor;
+
+
+	FRageOnineMessageData(){};
+	FRageOnineMessageData(FString NewMessage, class ARagePlayerCar* ThePlayer);
+
+
+};
+
+
+
+
 UENUM(BlueprintType)		//"BlueprintType" is essential to include
 enum class EWeaponArchetype : uint8
 {
@@ -16,6 +74,54 @@ enum class EWeaponArchetype : uint8
 };
 
 
+
+
+class FOnlineSessionSearchResult;
+// Fire State Struct
+USTRUCT(BlueprintType)
+struct FAvaiableSessionsData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FString OwnerName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		int32 Ping;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		int32 NumberOfConnections;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		int32 NumberOfAvaiableConnections;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+	FOnlineSessionSearchResult SessionData;
+
+	FAvaiableSessionsData(){};
+	FAvaiableSessionsData(class FOnlineSessionSearchResult newSessionData);
+
+};
+
+
+
+// Fire State Struct
+USTRUCT(BlueprintType)
+struct FPlayerSaveData
+{
+	GENERATED_USTRUCT_BODY()
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FString PlayerName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		FVector PlayerColor;
+
+	// Player Data
+	/*
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+	*/
+
+};
 
 // Fire State Struct
 USTRUCT(BlueprintType)

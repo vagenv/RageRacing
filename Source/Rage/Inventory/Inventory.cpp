@@ -12,7 +12,7 @@
 #include "Inventory/ItemPickup.h"
 #include "Weapons/Weapon.h"
 
-#include "Custom/SystemSaveGame.h"
+#include "System/SystemSaveGame.h"
 #include "UnrealNetwork.h"
 
 
@@ -38,6 +38,7 @@ void UInventory::ActionIndex(int32 ItemIndex)
 	{
 		Action(Items[ItemIndex].Archetype->GetDefaultObject<AItem>());
 	}
+
 }
 
 // Use Item With Ref
@@ -99,10 +100,12 @@ void UInventory::ThrowOutIndex(int32 ItemIndex)
 					{
 						newPickup->Mesh->SetStaticMesh(newItem->PickupMesh);
 					}
+					/*
 					else if (newItem->PickupSkelMesh)
 					{
 						newPickup->SkeletalMesh->SetSkeletalMesh(newItem->PickupSkelMesh);
 					}
+					*/
 
 				}
 				if (newPickup->Mesh)
@@ -111,11 +114,13 @@ void UInventory::ThrowOutIndex(int32 ItemIndex)
 					newPickup->Mesh->WakeRigidBody();
 
 				}
+				/*
 				else if (newPickup->SkeletalMesh)
 				{
 					newPickup->SkeletalMesh->SetSimulatePhysics(true);
 					newPickup->SkeletalMesh->WakeRigidBody();
 				}
+				*/
 				newPickup->bAutoPickup = true;
 				if (Cast<AWeapon>(newItem))
 				{
@@ -133,15 +138,16 @@ void UInventory::ThrowOutIndex(int32 ItemIndex)
 
 
 				newPickup->ActivatePickupPhysics();
-				if (newPickup->Mesh)
+				if (newPickup->Mesh  && newPickup->Mesh->IsSimulatingPhysics())
 				{
-					newPickup->Mesh->AddImpulse(rot.Vector(), NAME_None, true);
+					newPickup->Mesh->AddImpulse(rot.Vector() * 12000, NAME_None, true);
 				}
+				/*
 				if (newPickup->SkeletalMesh)
 				{
 					newPickup->SkeletalMesh->AddForce(rot.Vector() * 16000, NAME_None, true);
 				}
-
+				*/
 				UpdateInfo();
 			}
 		}
@@ -193,7 +199,7 @@ void UInventory::ItemPickedUp(AItemPickup* ThePickup)
 		
 	}
 	
-	
+	if (ThePlayer)ThePlayer->SearchNewWeaponEquip();
 }
 
 
@@ -331,7 +337,7 @@ void UInventory::UpdateInfo()
 	TotalWeight = 0;
 
 	// Calculate weight of each item * itemcound
-	for (int i = 0; i < Items.Num(); i++)
+	for (int32 i = 0; i < Items.Num(); i++)
 	{
 		if (Items[i].Weight>0 && Items[i].ItemCount>0)
 			TotalWeight += (Items[i].Weight*Items[i].ItemCount);

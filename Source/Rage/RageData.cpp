@@ -3,7 +3,49 @@
 #include "Rage.h"
 #include "RageData.h"
 #include "Weapons/Weapon.h"
+#include "System/RageGameInstance.h"
+#include "Vehicle/RagePlayerCar.h"
 
+
+
+FRageOnineMessageData::FRageOnineMessageData(FString NewMessage, ARagePlayerCar* ThePlayer)
+{
+
+	MessageTime = FDateTime::Now();
+	TheMessage = NewMessage;
+	if (ThePlayer)
+	{
+		MessageOwner = ThePlayer->CharacterName;
+		MessageColor = ThePlayer->CharacterColor;
+	}
+	
+
+}
+
+FRageOninePlayerData::FRageOninePlayerData(ARagePlayerCar* NewPlayer)
+{
+	if (!NewPlayer)return;
+
+	ThePlayer = NewPlayer;
+
+	PlayerName = NewPlayer->CharacterName;
+
+	PlayerColor = NewPlayer->CharacterColor;
+
+	CurrentHealth=NewPlayer->Health;
+
+}
+
+
+FAvaiableSessionsData::FAvaiableSessionsData(FOnlineSessionSearchResult newSessionData)
+{
+	SessionData = newSessionData;
+
+	OwnerName = newSessionData.Session.OwningUserName;
+	Ping = newSessionData.PingInMs;
+	NumberOfConnections = newSessionData.Session.SessionSettings.NumPublicConnections;
+	NumberOfAvaiableConnections = NumberOfConnections-newSessionData.Session.NumOpenPublicConnections;
+}
 
 
 FItemData::FItemData(TSubclassOf<AItem> Item, FString newItemName, UTexture2D* newItemIcon, float newWeight, int32 newItemCount)

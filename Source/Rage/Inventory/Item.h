@@ -13,11 +13,11 @@ class RAGE_API AItem : public AActor
 
 
 public:
-		//			Basic Events
-		AItem(const class FObjectInitializer& PCIP);
+
+	//			Basic Events
+	AItem(const class FObjectInitializer& PCIP);
 
 	virtual void BeginPlay() override;
-
 
 	// Pickup Mesh
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item | Pickup")

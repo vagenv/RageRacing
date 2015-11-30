@@ -15,14 +15,13 @@ AWeapon::AWeapon(const class FObjectInitializer& PCIP) :AItem(PCIP)
 
 	TheStaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	TheStaticMeshComponent->AttachParent = RootComponent;
+	bReplicates = true;
 
 }
 
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
-
-
 
 	// Double check at the begining
 	bReloading = false;
@@ -93,6 +92,7 @@ void AWeapon::PreFire()
 		//  BP No Ammo
 		BP_NoAmmo();
 		UnEquipStart();
+		if (ThePlayer)ThePlayer->WeaponAmmoFinished();
 		RemoveThisItemFromInventory();
 		return;
 	}
@@ -105,7 +105,7 @@ void AWeapon::PreFire()
 }
 
 
-
+// Weapon Used in Inventory
 void AWeapon::InventoryUse(ARagePlayerCar* Player)
 {
 	Super::InventoryUse(Player);
@@ -238,6 +238,10 @@ void AWeapon::UnEquipEnd()
 
 
 
+void AWeapon::ClientWeaponUpdated()
+{
+	AttachWeapon();
+}
 
 void AWeapon::AttachWeapon()
 {

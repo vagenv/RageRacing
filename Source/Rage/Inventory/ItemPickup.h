@@ -24,8 +24,8 @@ public:
 	class UStaticMeshComponent* Mesh;
 
 	// Skeletal Mesh
-	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
-	class USkeletalMeshComponent* SkeletalMesh;
+	//UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")
+	//class USkeletalMeshComponent* SkeletalMesh;
 
 	// Trigger Sphere
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Pickup")

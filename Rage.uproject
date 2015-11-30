@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{F9DB11DC-4712-56D7-8273-24A115FD4307}",
+	"EngineAssociation": "{51B85E65-4BA1-9C12-BF87-E8A63709348C}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -24,10 +24,6 @@
 		},
 		{
 			"Name": "CableComponent",
-			"Enabled": false
-		},
-		{
-			"Name": "CodeLiteSourceCodeAccess",
 			"Enabled": false
 		},
 		{
@@ -60,10 +56,6 @@
 		},
 		{
 			"Name": "MacGraphicsSwitching",
-			"Enabled": false
-		},
-		{
-			"Name": "MessagingDebugger",
 			"Enabled": false
 		},
 		{
@@ -108,6 +100,62 @@
 		},
 		{
 			"Name": "XCodeSourceCodeAccess",
+			"Enabled": false
+		},
+		{
+			"Name": "BlueprintStats",
+			"Enabled": true
+		},
+		{
+			"Name": "OculusInput",
+			"Enabled": false
+		},
+		{
+			"Name": "WindowsDeviceProfileSelector",
+			"Enabled": true
+		},
+		{
+			"Name": "AndroidDeviceProfileSelector",
+			"Enabled": false
+		},
+		{
+			"Name": "AndroidMedia",
+			"Enabled": false
+		},
+		{
+			"Name": "AndroidMoviePlayer",
+			"Enabled": false
+		},
+		{
+			"Name": "ArchVisCharacter",
+			"Enabled": false
+		},
+		{
+			"Name": "CodeLiteSourceCodeAccess",
+			"Enabled": false
+		},
+		{
+			"Name": "ExampleDeviceProfileSelector",
+			"Enabled": false
+		},
+		{
+			"Name": "KDevelopSourceCodeAccess",
+			"Enabled": false
+		},
+		{
+			"Name": "LinuxDeviceProfileSelector",
+			"Enabled": false
+		},
+		{
+			"Name": "MediaPlayerEditor",
+			"Enabled": false
+		},
+		{
+			"Name": "ScriptGeneratorPlugin",
+			"Enabled": false
+		},
+		{
+			"Name": "UObjectPlugin",
 			"Enabled": false
 		}
 	],

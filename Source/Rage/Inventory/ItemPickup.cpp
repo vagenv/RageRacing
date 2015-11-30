@@ -15,9 +15,10 @@ AItemPickup::AItemPickup(const class FObjectInitializer& PCIP)
 
 
 
-	RootComponent = PCIP.CreateDefaultSubobject<USceneComponent>(this, TEXT("RootComponent"));
-	RootComponent->SetIsReplicated(true);
+//	RootComponent = PCIP.CreateDefaultSubobject<USceneComponent>(this, TEXT("RootComponent"));
+//	RootComponent->SetIsReplicated(true);
 
+	/*
 	SkeletalMesh = PCIP.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("SkeletalMesh"));
 	SkeletalMesh->AttachParent = RootComponent;
 	SkeletalMesh->SetNetAddressable();
@@ -26,18 +27,21 @@ AItemPickup::AItemPickup(const class FObjectInitializer& PCIP)
 	SkeletalMesh->bRenderCustomDepth = true;
 	SkeletalMesh->MarkRenderStateDirty();
 	SkeletalMesh->SetRenderCustomDepth(false);
+	*/
 
 	Mesh = PCIP.CreateDefaultSubobject<UStaticMeshComponent>(this, TEXT("Mesh"));
-	Mesh->AttachParent = RootComponent;
+	RootComponent = Mesh;
+	//Mesh->AttachParent = RootComponent;
 	Mesh->SetNetAddressable();
 	Mesh->SetIsReplicated(true);
 	Mesh->SetRenderCustomDepth(false);
 
 	TriggerSphere = PCIP.CreateDefaultSubobject<USphereComponent>(this, TEXT("TriggerSphere"));
 	TriggerSphere->InitSphereRadius(300);
-	TriggerSphere->AttachParent = RootComponent;
+	TriggerSphere->AttachParent = Mesh;
 
 	bReplicates = true;
+	bReplicateMovement = true;
 }
 
 
@@ -45,8 +49,12 @@ void AItemPickup::BeginPlay()
 {
 	Super::BeginPlay();
 
+
+	SetReplicateMovement(true);
+	SetReplicates(true);
+
 	// Set Pickup Skeletal Mesh Outline
-	if (SkeletalMesh)SkeletalMesh->SetRenderCustomDepth(false);
+	//if (SkeletalMesh)SkeletalMesh->SetRenderCustomDepth(false);
 
 	// Set Pickup Mesh Outline
 	if (Mesh)Mesh->SetRenderCustomDepth(false);
@@ -57,12 +65,14 @@ void AItemPickup::BeginPlay()
 
 	//SetReplicates(true);
 
+	/*
 	if (Role < ROLE_Authority)
 	{
-		TriggerSphere->DestroyComponent();
+		TriggerSphere->Deactivate();
+		//TriggerSphere->DestroyComponent();
 		return;
 	}
-
+	*/
 	// Start Activate Delay on server
 	FTimerHandle MyHandle;
 	GetWorldTimerManager().SetTimer(MyHandle, this, &AItemPickup::ActivatePickupOverlap, PickupActivationDelay, false);
@@ -74,6 +84,8 @@ void AItemPickup::BeginPlay()
 // Activate Overlap detection
 void AItemPickup::ActivatePickupOverlap()
 {
+	if (Role < ROLE_Authority)
+		return;
 	TriggerSphere->OnComponentBeginOverlap.AddDynamic(this, &AItemPickup::OnBeginOverlap);
 	TriggerSphere->OnComponentEndOverlap.AddDynamic(this, &AItemPickup::OnEndOverlap);
 }
@@ -81,26 +93,32 @@ void AItemPickup::ActivatePickupOverlap()
 // Activate Pickup Physics
 void AItemPickup::ActivatePickupPhysics()
 {
+
+	if (Role < ROLE_Authority)
+		return;
+
 	if (Mesh->StaticMesh)
 	{
-		SkeletalMesh->DestroyComponent();
-		TriggerSphere->AttachTo(Mesh);
+		//SkeletalMesh->DestroyComponent();
+		//TriggerSphere->AttachTo(Mesh);
 
 		Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 		Mesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		Mesh->SetSimulatePhysics(true);
 		Mesh->WakeRigidBody();
 	}
+	/*
 	else if (SkeletalMesh->SkeletalMesh)
 	{
 		Mesh->DestroyComponent();
-		TriggerSphere->AttachTo(SkeletalMesh, NAME_None, EAttachLocation::SnapToTarget);
-
+		//TriggerSphere->AttachTo(SkeletalMesh, NAME_None, EAttachLocation::SnapToTarget);
+		//TriggerSphere->AttachTo(SkeletalMesh);
 		SkeletalMesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 		SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 		SkeletalMesh->SetSimulatePhysics(true);
 		SkeletalMesh->WakeRigidBody();
 	}
+	*/
 }
 
 // Player Entered The Pickup Area
@@ -124,7 +142,7 @@ void AItemPickup::OnBeginOverlap(AActor* OtherActor, UPrimitiveComponent* OtherC
 			Cast<ARagePlayerCar>(OtherActor)->currentPickup = this;
 
 			// Activate highlight
-			if (SkeletalMesh)SkeletalMesh->SetRenderCustomDepth(true);
+			//if (SkeletalMesh)SkeletalMesh->SetRenderCustomDepth(true);
 			if (Mesh)Mesh->SetRenderCustomDepth(true);
 		}
 	}
@@ -143,7 +161,7 @@ void AItemPickup::OnEndOverlap(AActor* OtherActor, UPrimitiveComponent* OtherCom
 			Cast<ARagePlayerCar>(OtherActor)->currentPickup = NULL;
 
 		// Disable pickup highlight
-		if (SkeletalMesh)SkeletalMesh->SetRenderCustomDepth(false);
+		//if (SkeletalMesh)SkeletalMesh->SetRenderCustomDepth(false);
 		if (Mesh)Mesh->SetRenderCustomDepth(false);
 	}
 }
@@ -167,5 +185,5 @@ void AItemPickup::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AItemPickup, Mesh);
-	DOREPLIFETIME(AItemPickup, SkeletalMesh);
+///	DOREPLIFETIME(AItemPickup, SkeletalMesh);
 }

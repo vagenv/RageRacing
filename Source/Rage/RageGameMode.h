@@ -20,7 +20,7 @@ public:
 
 
 	// The Save Game file
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "SaveGame")
 	class USystemSaveGame* SaveFile;
 
 
