@@ -138,7 +138,7 @@ public:
 	void WeaponAmmoFinished();
 
 	// Called on Client when One of the weapons was updated
-	virtual void ClientWeaponUpdated()override;
+	virtual void OnRep_WeaponsUpdated()override;
 
 
 	// Inventory List Updated

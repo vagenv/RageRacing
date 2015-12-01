@@ -2,6 +2,7 @@
 
 #include "Rage.h"
 #include "System/RageGameInstance.h"
+#include "Vehicle/RagePlayerCar.h"
 //#include "Online.h"
 //#include "OnlineSubsystem.h"
 //#include "Online/OnlineSubsystem/Public/OnlineSubsystem.h"
@@ -94,14 +95,13 @@ bool URageGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UserId, FName
 			SessionSettings->bAllowJoinViaPresence = true;
 			SessionSettings->bAllowJoinViaPresenceFriendsOnly = false;
 
-
 			SessionSettings->Set(SETTING_MAPNAME, MapName, EOnlineDataAdvertisementType::ViaOnlineService);
 
 			// Set the delegate to the Handle of the SessionInterface
 			OnCreateSessionCompleteDelegateHandle = Sessions->AddOnCreateSessionCompleteDelegate_Handle(OnCreateSessionCompleteDelegate);
 
 			// Our delegate should get called when this is complete (doesn't need to be successful!)
-			return Sessions->CreateSession(*UserId, SessionName, *SessionSettings);
+			return Sessions->CreateSession(*UserId, "In Session Host", *SessionSettings);
 		}
 	}
 	else
@@ -183,10 +183,21 @@ void URageGameInstance::StartOnlineGame()
 	// Creating a local player where we can get the UserID from
 	ULocalPlayer* const Player = GetFirstGamePlayer();
 
+	FName ServName;
+
+	if (Cast<ARagePlayerCar>(Player))
+	{
+		ServName=*(Cast<ARagePlayerCar>(Player)->CharacterName);
+	}
+	else ServName = "Empty Name";
 	//Player->GetPreferredUniqueNetId()
+	
+	//SessionName
+	//GameSessionName
 
 	// Call our custom HostSession function. GameSessionName is a GameInstance variable
-	HostSession(Player->GetPreferredUniqueNetId(), GameSessionName,"BloodBathMap",false, true, 16);
+	HostSession(Player->GetPreferredUniqueNetId(), ServName, "BloodBathMap", false, true, 16);
+	
 }
 
 // TEST BP FUNCTION THAT WE USE TO START AN ONLINE GAME. LATER YOU CAN USE A UMG BUTTON OR SOMETHING ELSE!

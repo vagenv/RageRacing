@@ -37,6 +37,8 @@ struct FRageOninePlayerData
 
 };
 
+
+
 USTRUCT(BlueprintType)
 struct FRageOnineMessageData
 {

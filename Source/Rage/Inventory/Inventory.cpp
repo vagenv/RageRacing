@@ -346,7 +346,7 @@ void UInventory::UpdateInfo()
 }
 
 // Update Item List, Called on client
-void UInventory::ClientReceiveUpdatedItemList()
+void UInventory::OnRep_ItemListUpdated()
 {
 	if (ThePlayer && ThePlayer->TheHUD)
 		ThePlayer->TheHUD->BP_InventoryUpdated();

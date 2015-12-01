@@ -14,6 +14,7 @@
 
 #include "UnrealNetwork.h"
 #include "System/RageGameState.h"
+#include "System/RagePlayerState.h"
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -168,6 +169,11 @@ bool ARagePlayerCar::SetPlayerStats_Validate(const FString & newPlayerName, FLin
 
 void ARagePlayerCar::SetPlayerStats_Implementation(const FString & newPlayerName, FLinearColor newPlayerColor, FVector newAdditonalColorProperties)
 {
+	if (PlayerState)
+	{
+		PlayerState->PlayerName = newPlayerName;
+		if (Cast<ARagePlayerState>(PlayerState))Cast<ARagePlayerState>(PlayerState)->PlayerColor = newPlayerColor;
+	}
 	CharacterName = newPlayerName;
 	CharacterColor = newPlayerColor;
 	AdditonalColorProperties = newAdditonalColorProperties;
@@ -246,7 +252,7 @@ void ARagePlayerCar::EquipDefaultWeapons()
 
 
 // Weapon Updated
-void ARagePlayerCar::ClientWeaponUpdated()
+void ARagePlayerCar::OnRep_WeaponsUpdated()
 {
 	if (TheHUD)TheHUD->BP_InventoryUpdated();
 	if (MainWeapon)MainWeapon->ClientWeaponUpdated();

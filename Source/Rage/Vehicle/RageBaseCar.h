@@ -75,15 +75,15 @@ public:
 
 
 	// Main Weapon Ref
-	UPROPERTY(ReplicatedUsing = ClientWeaponUpdated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponsUpdated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	class AWeapon* MainWeapon;
 
 	// Alt Weapon Ref
-	UPROPERTY(ReplicatedUsing = ClientWeaponUpdated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponsUpdated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	class AWeapon* AltWeapon;
 
 	// Ult Weapon Ref
-	UPROPERTY(ReplicatedUsing = ClientWeaponUpdated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponsUpdated, EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	class AWeapon* UltWeapon;
 
 
@@ -110,7 +110,7 @@ public:
 
 	// Current Weapon Updated
 	UFUNCTION()
-		virtual void ClientWeaponUpdated(){};
+		virtual void OnRep_WeaponsUpdated(){};
 
 
 	// Curve with scale-to-distance ratio of widget

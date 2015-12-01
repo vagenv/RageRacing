@@ -9,7 +9,7 @@
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FChatUpdateDelegate);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FSimpleEventDelegate);
 
 UCLASS()
 class RAGE_API ARageGameState : public AGameState
@@ -25,17 +25,33 @@ public:
 	virtual void BeginPlay();
 
 
-	UPROPERTY(ReplicatedUsing = MessagesUpdated, EditAnywhere, BlueprintReadOnly, Category = " ")
+	UPROPERTY(ReplicatedUsing = OnRep_MessagesList, EditAnywhere, BlueprintReadOnly, Category = " ")
 	TArray<FRageOnineMessageData> TheMessages;
 
 	UFUNCTION()
-		void MessagesUpdated();
+		void OnRep_MessagesList();
+
+	UPROPERTY(BlueprintAssignable, Category = "")
+		FSimpleEventDelegate ChatUpdateDelegate;
 
 
-	UPROPERTY(BlueprintAssignable, Category = "UI")
-		FChatUpdateDelegate TheChatUpdateDelegate;
+
+
 
 	void AddNewChatMessage(FString TheMessage, class ARagePlayerCar* ThePlayer);
-	
+
+
+
+	UPROPERTY(ReplicatedUsing = OnRep_PlayersListUpdated, EditAnywhere, BlueprintReadOnly, Category = " ")
+		TArray<FRageOninePlayerData> ThePlayers;
+	UFUNCTION()
+		void OnRep_PlayersListUpdated();
+	UPROPERTY(BlueprintAssignable, Category = "")
+		FSimpleEventDelegate PlayerUpdateDelegate;
+
+
+
+	void UpdatePlayerStats();
+
 
 };

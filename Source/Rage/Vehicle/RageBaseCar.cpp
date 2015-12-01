@@ -8,6 +8,7 @@
 #include "Wheels/RageWheelRear.h"
 #include "Weapons/Weapon.h"
 
+#include "System/RagePlayerState.h"
 
 #include "Components/SkeletalMeshComponent.h"
 #include "Sound/SoundCue.h"
@@ -179,6 +180,14 @@ float ARageBaseCar::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 		Health = 0;
 
 		Death();
+
+		// Add Death to Self
+		if (Cast<ARagePlayerState>(PlayerState))Cast<ARagePlayerState>(PlayerState)->DeathCount++;
+
+		// Add Kill to Enemy
+		if (EventInstigator && Cast<ARageBaseCar>(EventInstigator->GetPawn()) && Cast<ARagePlayerState>(Cast<ARageBaseCar>(EventInstigator->GetPawn())->PlayerState))
+			Cast<ARagePlayerState>(Cast<ARageBaseCar>(EventInstigator->GetPawn())->PlayerState)->KillCount++;
+
 		//ServerDie();
 	}
 
@@ -206,6 +215,8 @@ void ARageBaseCar::Death()
 
 	BP_Death();
 	Global_Death();
+
+	
 
 	if (bCanRevive)
 	{

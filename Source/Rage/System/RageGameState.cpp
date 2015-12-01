@@ -18,11 +18,10 @@ void ARageGameState::BeginPlay()
 }
 
 // Called On Client to Update HUD when message list updated
-void ARageGameState::MessagesUpdated()
+void ARageGameState::OnRep_MessagesList()
 {
-	TheChatUpdateDelegate.Broadcast();
+	ChatUpdateDelegate.Broadcast();
 }
-
 // Called on server to add new message
 void ARageGameState::AddNewChatMessage(FString  TheMessage, class ARagePlayerCar* ThePlayer)
 {
@@ -30,8 +29,23 @@ void ARageGameState::AddNewChatMessage(FString  TheMessage, class ARagePlayerCar
 
 
 	// Update HUD on server
-	TheChatUpdateDelegate.Broadcast();
+	ChatUpdateDelegate.Broadcast();
 }
+
+
+
+// Called On Client to Update HUD when Player list updated
+void ARageGameState::OnRep_PlayersListUpdated()
+{
+	PlayerUpdateDelegate.Broadcast();
+}
+
+
+void ARageGameState::UpdatePlayerStats()
+{
+
+}
+
 
 // Replication of data
 void ARageGameState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const

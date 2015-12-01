@@ -30,12 +30,12 @@ public:
 
 
 	// Item Data List
-	UPROPERTY(ReplicatedUsing = ClientReceiveUpdatedItemList, EditAnywhere, BlueprintReadOnly, Category = Inventory)
+	UPROPERTY(ReplicatedUsing = OnRep_ItemListUpdated, EditAnywhere, BlueprintReadOnly, Category = Inventory)
 		TArray<FItemData> Items;
 
 	// Item List Updated, Called on Clients
 	UFUNCTION()
-		void ClientReceiveUpdatedItemList();
+		void OnRep_ItemListUpdated();
 
 	// Total Weight of Inventory
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly)
