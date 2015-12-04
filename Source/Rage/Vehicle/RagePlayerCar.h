@@ -63,29 +63,33 @@ public:
 
 
 	// Energy Data
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Energy")
-		FEnergyData TheEnergyData;
+	UPROPERTY(ReplicatedUsing = OnRep_BoostEnergyReplicated, EditAnywhere, BlueprintReadWrite, Category = "Energy")
+		FBoostEnergyData TheBoostEnergyData;
+
+	UPROPERTY(ReplicatedUsing = OnRep_ShieldEnergyReplicated, EditAnywhere, BlueprintReadWrite, Category = "Shield")
+		FShieldEnergyData TheShieldEnergyData;
+	
 
 	// The Controller
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "GamePlay")
 	class APlayerController * ThePC;
 
 	// The Inventory
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 	class UInventory * TheInventory;
 
 	// The HUD
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HUD")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 	class ARageHUD* TheHUD;
 
 	// Current Item Pickup Selected
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 	class AItemPickup * currentPickup;
 
 
 
 	// Current Item Pickup Selected
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
 		class AWeapon * PendingWeaponEquip;
 
 
@@ -96,6 +100,7 @@ public:
 
 
 
+	////////				 Camera
 
 
 	// Called to wwitch between cameras 
@@ -106,16 +111,103 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 		bool bThirdPersonCamera = true;
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// Use All Energy
+	///						Boost Energy
+
+	// Use All Boost Energy
 	UFUNCTION(BlueprintCallable, Category = "Energy")
-		void UseAllEnergy();
+		void UseAllBoostEnergy();
 
-	// Use Some Energy
+	// Use Some Boost Energy
 	UFUNCTION(BlueprintCallable, Category = "Energy")
-		void UseEnergy(float Value);
+		void UseBoostEnergy(float Value);
 
 
+	// Can Boost
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
+		bool CanBoost();
+
+	// Can Boost Jump
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
+		bool CanJump();
+
+
+	// Enable Boost Energy Restore
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+		void StartBoostEnergyRestore();
+
+	// Disable Boost Energy Restore
+	UFUNCTION(BlueprintCallable, Category = "Energy")
+		void StopBoostEnergyRestore();
+
+
+	// Get  Boost Energy Percent
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
+		float GetBoostEnergyPercent();
+
+
+	UFUNCTION()
+		void OnRep_BoostEnergyReplicated();
+
+
+private:
+	// Energy Restore Timer Handle
+	FTimerHandle BoostEnergyRestoreHandle;
+
+	// Energy Restore Event
+	void BoostEnergy_Restore();
+public:
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	///						Shield
+
+	// Use Some Shield Energy
+	UFUNCTION(BlueprintCallable, Category = "Shield")
+		void UseShieldEnergy(float Value);
+
+	// Enable Shield Energy Restore
+	UFUNCTION(BlueprintCallable, Category = "Shield")
+		void StartShieldEnergyRestore();
+
+	// Disable Shield Energy Restore
+	UFUNCTION(BlueprintCallable, Category = "Shield")
+		void StopShieldEnergyRestore();
+
+
+	// Get Shield Energy Percent
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Shield")
+		float GetShieldEnergyPercent();
+
+
+	// When Item Is Used
+	UFUNCTION(BlueprintImplementableEvent, Category = "Shield")
+		void BP_ShieldEnergyValueUpdated();
+
+	UFUNCTION()
+		void OnRep_ShieldEnergyReplicated();
+
+
+private:
+	// Energy Restore Timer Handle
+	FTimerHandle ShieldEnergyRestoreHandle;
+
+	// Delayed Energy Start
+	FTimerHandle ShieldEnergyRestoreStartDelayHandle;
+
+	// Energy Restore Event
+	void ShieldEnergy_Restore();
+public:
+
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+	//					Weapon
 	// Equip new Weapon
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 		void EquipNewWeapon(class AWeapon* TheWeapon);
@@ -141,6 +233,17 @@ public:
 	virtual void OnRep_WeaponsUpdated()override;
 
 
+
+
+	// Check player state if he can fire
+	virtual bool CanShoot();
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	////				Inventory
+
 	// Inventory List Updated
 	void InventoryUpdated();
 
@@ -155,7 +258,7 @@ public:
 
 
 	// Use Item Called On Server
-	UFUNCTION(Reliable, Server, WithValidation, BlueprintCallable, Category = "Item")
+	UFUNCTION(Reliable, Server, WithValidation, BlueprintCallable, Category = "Inventory")
 		void Server_UseItem(AItem* TheItem);
 	bool Server_UseItem_Validate(AItem* TheItem);
 	void Server_UseItem_Implementation(AItem* TheItem);
@@ -169,12 +272,44 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
 		void BP_ItemDroped(class AItemPickup* thePickup);
 
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	//								CarReset 
+
+
+	// Is the car turned over
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "State")
+		bool IsTurnedOver();
+
+	// Turned Over Valid Angle
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")
+		float TurnedOverValidAngle = 130;
+	// Turned Over Max Velocity
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")
+		float TurnedOverValidVelocity = 300;
+
+	// Restore Height offset
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "State")
+		float ResetRestoreHeight = 100;
+
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	///				Death/Revive/ DMG
 
 	// Player Died
 	virtual void Death()override;
 
 	// Player Revived
 	virtual void Revive()override;
+
+	// Take Damage override
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)override;
+
+	// Take Damage override
+	virtual void ShieldAbsorbDamage(float& DamageAmount, struct FDamageEvent const& DamageEvent);
 
 
 private:
@@ -194,10 +329,6 @@ public:
 	//							Additonal Properties and Events
 
 
-	// Character Color
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
-		FVector AdditonalColorProperties = FVector(1);
-
 	// Reset the car function
 	UFUNCTION(Reliable, Server, WithValidation, BlueprintCallable, Category = "Network")
 		void AddChatMessage(const FString & TheMessage);
@@ -207,7 +338,7 @@ public:
 
 
 	// Reset the car function
-	UFUNCTION(Reliable, Server, WithValidation, BlueprintCallable, Category = "Player")
+	UFUNCTION(Reliable, Server, WithValidation, BlueprintCallable, Category = "Status")
 		void SetPlayerStats(const FString & newPlayerName, FLinearColor newPlayerColor, FVector newAdditonalColorProperties);
 	bool SetPlayerStats_Validate(const FString & newPlayerName, FLinearColor newPlayerColor, FVector newAdditonalColorProperties);
 	void SetPlayerStats_Implementation(const FString & newPlayerName, FLinearColor newPlayerColor, FVector newAdditonalColorProperties);
@@ -217,63 +348,6 @@ public:
 
 
 
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	//								State Checking
-
-
-	// Check player state if he can fire
-	virtual bool CanShoot();
-
-	// Can Boost
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
-		bool CanBoost();
-
-	// Can Boost Jump
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Energy")
-		bool CanJump();
-
-
-	// Is the car turned over
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
-		bool IsTurnedOver();
-
-	// Turned Over Valid Angle
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
-		float TurnedOverValidAngle = 130;
-	// Turned Over Max Velocity
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
-		float TurnedOverValidVelocity = 300;
-
-	// Restore Height offset
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
-		float ResetRestoreHeight = 100;
-
-	// Enable Energy Restore
-	UFUNCTION(BlueprintCallable, Category = "Energy")
-		void StartEneryRestore();
-
-	// Disable Energy Restore
-	UFUNCTION(BlueprintCallable, Category = "Energy")
-		void StopEneryRestore();
-
-
-	// Get Energy Percent
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
-		float GetEnergyPercent();
-
-
-
-
-
-private:
-	// Energy Restore Timer Handle
-	FTimerHandle EnergyRestoreHandle;
-
-	// Energy Restore Event
-	void Energy_Restore();
-public:
 
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,11 +385,11 @@ public:
 
 
 	//  Android Vertical Tilt value Curve
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 		FRuntimeFloatCurve VerticalInputCurve;
 
 	//  Android Horizontal Tilt value Curve
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 		FRuntimeFloatCurve HorizontalInputCurve;
 
 
@@ -328,24 +402,24 @@ public:
 		virtual void AddHorizontalInput(float Val);
 
 	// Blueprint Boost
-	UFUNCTION(BlueprintImplementableEvent, Category = "Boost")
+	UFUNCTION(BlueprintImplementableEvent, Category = "State")
 		void BP_Boost();
 
 	// Blueprint Double Jump
-	UFUNCTION(BlueprintImplementableEvent, Category = "Boost")
+	UFUNCTION(BlueprintImplementableEvent, Category = "State")
 		void BP_DoubleJump();
 
 
 
 	// Reset the car function
-	UFUNCTION(Reliable, Server, WithValidation, BlueprintCallable, Category = "TheCar")
+	UFUNCTION(Reliable, Server, WithValidation, BlueprintCallable, Category = "State")
 		void ResetCar();
 	bool ResetCar_Validate();
 	void ResetCar_Implementation();
 
 
 	// BP event when car was reseted
-	UFUNCTION(BlueprintImplementableEvent, Category = "TheCar")
+	UFUNCTION(BlueprintImplementableEvent, Category = "State")
 		void BP_CarWasReseted();
 
 

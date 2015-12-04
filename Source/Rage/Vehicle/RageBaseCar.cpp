@@ -171,8 +171,9 @@ float ARageBaseCar::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 {
 	// 
 	if (bDead)
-		return 0;
+		return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
+	// Take Health From Vehicle
 	Health -= DamageAmount;
 
 	if (Health <= 0)

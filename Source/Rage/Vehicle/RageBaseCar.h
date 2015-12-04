@@ -43,24 +43,28 @@ public:
 
 
 	// Maximum Health
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Status")
 		float MaxHealth = 100;
 
 	// Current Health
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "TheCar")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Status")
 		float Health = 50;
 
 
 	// Character Name 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Character")
 		FString CharacterName;
 
 	// Character Color
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Character")
 		FLinearColor CharacterColor = FLinearColor::White;
 
+	// Material Properties
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Character")
+		FVector AdditonalColorProperties = FVector(1);
+
 	// Randomise Color on Start
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character")
 		bool bRandomizeCharacterColorOnStart = false;
 
 
@@ -70,7 +74,7 @@ public:
 
 
 	// Character Status Widget
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 		UWidgetComponent* CharacterStatusWidget;
 
 
@@ -114,7 +118,7 @@ public:
 
 
 	// Curve with scale-to-distance ratio of widget
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 		FRuntimeFloatCurve CharacterStatusWidget_ZoomCurve;
 
 	// Default offset of widget 
@@ -131,11 +135,11 @@ public:
 		bool bDead;
 
 	// Can Character Revive after death
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 		bool bCanRevive = false;
 
 	// Character Revive Delay
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TheCar")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 		float ReviveTime= 5;
 
 	// Death Event
@@ -147,7 +151,7 @@ public:
 		virtual void Global_Death_Implementation();
 
 	// Blueprint Death
-	UFUNCTION(BlueprintImplementableEvent, Category = "TheCar")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Status")
 		void BP_Death();
 
 	// Revive
@@ -158,12 +162,12 @@ public:
 		virtual void Global_Revive_Implementation();
 
 	// Blueprint Revive
-	UFUNCTION(BlueprintImplementableEvent, Category = "TheCar")
+	UFUNCTION(BlueprintImplementableEvent, Category = "Status")
 		void BP_Revive();
 
 
 	// Add Health to Character
-	UFUNCTION(BlueprintCallable, Category = "Rage")
+	UFUNCTION(BlueprintCallable, Category = "Status")
 		virtual void AddHealth(float AddValue);
 
 	// Take Damage override
@@ -171,17 +175,17 @@ public:
 
 
 	// Get Health Percent
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Status")
 		float GetHealthPercent();
 
 
 
 	// Get Move Speed
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "State")
 	int32 GetMoveSpeed();
 
 	// Get Current Gear State
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TheCar")
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "State")
 	int32 GetGearState();
 
 

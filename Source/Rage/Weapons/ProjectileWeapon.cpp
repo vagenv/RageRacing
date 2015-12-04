@@ -3,7 +3,7 @@
 #include "Rage.h"
 #include "Engine.h"
 
-#include "Vehicle/RageBaseCar.h"
+#include "Vehicle/RagePlayerCar.h"
 #include "Weapons/ProjectileWeapon.h"
 #include "Projectile.h"
 
@@ -33,6 +33,7 @@ void AProjectileWeapon::Fire()
 				TheStaticMeshComponent->GetSocketLocation(TEXT("MuzzleFlashSocket")),
 				tempV.Rotation() );
 			theProjectile->TheWeapon = this;
+			theProjectile->ThePlayer = ThePlayer;
 
 			if (theProjectile)
 			{

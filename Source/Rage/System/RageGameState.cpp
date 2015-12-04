@@ -34,19 +34,6 @@ void ARageGameState::AddNewChatMessage(FString  TheMessage, class ARagePlayerCar
 
 
 
-// Called On Client to Update HUD when Player list updated
-void ARageGameState::OnRep_PlayersListUpdated()
-{
-	PlayerUpdateDelegate.Broadcast();
-}
-
-
-void ARageGameState::UpdatePlayerStats()
-{
-
-}
-
-
 // Replication of data
 void ARageGameState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
 {

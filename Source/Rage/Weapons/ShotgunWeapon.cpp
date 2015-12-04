@@ -64,6 +64,7 @@ void AShotgunWeapon::Fire()
 					//printr("Apply Damage");
 					//EnemyPlayer->TakeDamage(Player, currentWeapon->MainDamage, 0);
 					//EnemyCar->TakeDamage(FireDamage, FDamageEvent(), NULL, this);
+					UGameplayStatics::ApplyDamage(EnemyCar, WeaponData.FireDamage, ThePlayer->Controller, Cast<AActor>(this), DamageType);
 
 				}
 			}

@@ -22,7 +22,7 @@ public:
 
 
 
-	AActor* TheCar;
+	APawn* ThePlayer;
 	AActor* TheWeapon;
 
 
@@ -50,26 +50,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float LifeTime = 5;
 
+	// Projectile Affect Area
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		float AffectArea = 1500;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-		float RadialImpulse = 600000;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-		float CarImpulseMuliplier = 2;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-		float RadialDamage = 60;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-		float InnerDamageRadius = 300;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-		float OuterDamageRadius = 500;
-
-
-
-
+	// Projectile Explosion Damage Type
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 		TSubclassOf<class UDamageType> ExplosionDamageType;
+
+	// Radial Damage Curve
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+		FRuntimeFloatCurve RadialDamageCurve;
+
+	// Radial Impulse Curve
+	UPROPERTY(EditAnywhere, Category = "Projectile")
+		FRuntimeFloatCurve RadialImpulseCurve;
 
 
 
@@ -83,5 +78,14 @@ public:
 	virtual void Explode();
 	UFUNCTION(BlueprintImplementableEvent, Category = " Main Events ")
 		void BP_Explode();
+
+
+	// BP Hit
+	UFUNCTION(BlueprintImplementableEvent, Category = "Projectile")
+		void BP_Hit(UPrimitiveComponent* OtherComp, const FHitResult& Hit);
+
+	// Explosion hit Enemy
+	UFUNCTION(BlueprintImplementableEvent, Category = "Projectile")
+		void BP_Explode_HitEnemy(class ARageBaseCar* TheCharacter, float HitDamage);
 	
 };

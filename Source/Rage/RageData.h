@@ -8,37 +8,42 @@
 
 
 
+////////////////////////        Shield Data Type
 USTRUCT(BlueprintType)
-struct FRageOninePlayerData
+struct FShieldEnergyData
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-		FString PlayerName;
+public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-		FLinearColor PlayerColor;
+		float CurrentValue = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-		float CurrentHealth;
+		float MaxValue=100;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-		class ARagePlayerCar* ThePlayer;
+		float RestoreSpeed=0.1f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-		int32 KillCount;
+		float RestoreValue = 1;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
-		int32 DeathCount;
+		float TimeBeforeEnergyRestoreRestart = 2;
 
-	FRageOninePlayerData(){};
-	FRageOninePlayerData(class ARagePlayerCar* NewPlayer);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+		float BaseDmgMutiplier = 0.5f;
+
+
 
 
 };
 
 
 
+////////////////////////        Online Message Type
 USTRUCT(BlueprintType)
 struct FRageOnineMessageData
 {
@@ -65,8 +70,8 @@ struct FRageOnineMessageData
 
 
 
-
-UENUM(BlueprintType)		//"BlueprintType" is essential to include
+////////////				Weapon Type
+UENUM(BlueprintType)		
 enum class EWeaponArchetype : uint8
 {
 	Main						UMETA(DisplayName = "Main Weapon"),
@@ -84,7 +89,7 @@ USTRUCT(BlueprintType)
 struct FAvaiableSessionsData
 {
 	GENERATED_USTRUCT_BODY()
-
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
 		FString OwnerName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
@@ -127,7 +132,7 @@ struct FPlayerSaveData
 
 // Fire State Struct
 USTRUCT(BlueprintType)
-struct FEnergyData
+struct FBoostEnergyData
 {
 	GENERATED_USTRUCT_BODY()
 

@@ -22,20 +22,6 @@ FRageOnineMessageData::FRageOnineMessageData(FString NewMessage, ARagePlayerCar*
 
 }
 
-FRageOninePlayerData::FRageOninePlayerData(ARagePlayerCar* NewPlayer)
-{
-	if (!NewPlayer)return;
-
-	ThePlayer = NewPlayer;
-
-	PlayerName = NewPlayer->CharacterName;
-
-	PlayerColor = NewPlayer->CharacterColor;
-
-	CurrentHealth=NewPlayer->Health;
-
-}
-
 
 FAvaiableSessionsData::FAvaiableSessionsData(FOnlineSessionSearchResult newSessionData)
 {
@@ -46,6 +32,42 @@ FAvaiableSessionsData::FAvaiableSessionsData(FOnlineSessionSearchResult newSessi
 	NumberOfConnections = newSessionData.Session.SessionSettings.NumPublicConnections;
 	NumberOfAvaiableConnections = NumberOfConnections-newSessionData.Session.NumOpenPublicConnections;
 }
+
+
+
+void FBoostEnergyData::RestoreEnergy()
+{
+	if (CurrentValue<MaxValue)
+	{
+		CurrentValue += RestoreValue;
+
+		if (CurrentValue > MaxValue)
+			CurrentValue = MaxValue;
+	}
+}
+bool FBoostEnergyData::CanBoost()
+{
+	if (CurrentValue < BoostMinValue)return false;
+	else return true;
+}
+bool FBoostEnergyData::CanJump()
+{
+	if (CurrentValue < BoostJumpMinValue)return false;
+	else return true;
+}
+void FBoostEnergyData::UseAllEnergy()
+{
+	CurrentValue = 0;
+}
+void FBoostEnergyData::UseEnergy(float Value)
+{
+	if (CurrentValue<Value)
+	{
+		CurrentValue = 0;
+	}
+	else CurrentValue -= Value;
+}
+
 
 
 FItemData::FItemData(TSubclassOf<AItem> Item, FString newItemName, UTexture2D* newItemIcon, float newWeight, int32 newItemCount)
@@ -64,40 +86,6 @@ FItemData::FItemData(TSubclassOf<AItem> Item, FString newItemName, UTexture2D* n
 		TheWeaponData = Item->GetDefaultObject<AWeapon>()->WeaponData;
 
 	}
-}
-
-
-void FEnergyData::RestoreEnergy()
-{
-	if (CurrentValue<MaxValue)
-	{
-		CurrentValue += RestoreValue;
-
-		if (CurrentValue > MaxValue)
-			CurrentValue = MaxValue;
-	}
-}
-bool FEnergyData::CanBoost()
-{
-	if (CurrentValue < BoostMinValue)return false;
-	else return true;
-}
-bool FEnergyData::CanJump()
-{
-	if (CurrentValue < BoostJumpMinValue)return false;
-	else return true;
-}
-void FEnergyData::UseAllEnergy()
-{
-	CurrentValue = 0;
-}
-void FEnergyData::UseEnergy(float Value)
-{
-	if (CurrentValue<Value)
-	{
-		CurrentValue = 0;
-	}
-	else CurrentValue -= Value;
 }
 
 

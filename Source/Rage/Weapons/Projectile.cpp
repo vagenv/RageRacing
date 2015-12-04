@@ -25,7 +25,7 @@ AProjectile::AProjectile(const class FObjectInitializer& PCIP)
 	CollisionComp->InitSphereRadius(5.0f);
 	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");			// Collision profiles are defined in DefaultEngine.ini
 	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);		// set up a notification for when this component overlaps something
-	CollisionComp->IgnoreActorWhenMoving(TheCar, true);
+	CollisionComp->IgnoreActorWhenMoving(ThePlayer, true);
 	CollisionComp->IgnoreActorWhenMoving(TheWeapon, true);
 	CollisionComp->IgnoreActorWhenMoving(this, true);
 	CollisionComp->AttachParent = Mesh;
@@ -41,25 +41,47 @@ AProjectile::AProjectile(const class FObjectInitializer& PCIP)
 
 	// Die after 3 seconds by default
 	//InitialLifeSpan = 3.0f;
+
+	// Set default radial Damage Curve
+	FRichCurve* RadialDamageCurveData = RadialDamageCurve.GetRichCurve();
+	if (RadialDamageCurveData)
+	{
+		RadialDamageCurveData->AddKey(0, 90);
+		RadialDamageCurveData->AddKey(380, 40);
+		RadialDamageCurveData->AddKey(900, 0);
+	}
+
+	// Set default Radial Impulse Curve
+	FRichCurve* RadialImpulseCurveData = RadialImpulseCurve.GetRichCurve();
+	if (RadialImpulseCurveData)
+	{
+		RadialImpulseCurveData->AddKey(0, 15000);
+		RadialImpulseCurveData->AddKey(900, 9000);
+	}
+
 }
 
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	Mesh->SetMobility(EComponentMobility::Movable);
-	//ProjectileMovement->Velocity = FVector(0);
-	const UWorld* theWorld = GetWorld();
-	if (theWorld)
+
+	if (Role>=ROLE_Authority)
 	{
-		if (bAutoExplodeAfterTime)
+		Mesh->SetMobility(EComponentMobility::Movable);
+		//ProjectileMovement->Velocity = FVector(0);
+		const UWorld* theWorld = GetWorld();
+		if (theWorld)
 		{
-			FTimerHandle DeathHandle;
-			theWorld->GetTimerManager().SetTimer(DeathHandle, this, &AProjectile::Explode, LifeTime, false);
+			if (bAutoExplodeAfterTime)
+			{
+				FTimerHandle DeathHandle;
+				theWorld->GetTimerManager().SetTimer(DeathHandle, this, &AProjectile::Explode, LifeTime, false);
+			}
+
+
+			FTimerHandle EnableDelayhandle;
+			theWorld->GetTimerManager().SetTimer(EnableDelayhandle, this, &AProjectile::EnableProjectile, EnableDelay, false);
 		}
-
-
-		FTimerHandle EnableDelayhandle;
-		theWorld->GetTimerManager().SetTimer(EnableDelayhandle, this, &AProjectile::EnableProjectile, EnableDelay, false);
 	}
 
 }
@@ -78,7 +100,7 @@ void AProjectile::OnHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, FVec
 	if ((OtherActor != NULL) && (OtherActor != this) && (OtherComp != NULL) && OtherComp != Mesh)
 	{
 	
-		printg(OtherActor->GetName());
+		//printg(OtherActor->GetName());
 		Explode();
 	}
 
@@ -90,30 +112,39 @@ void AProjectile::Explode()
 	const FVector Loc = GetActorLocation();
 	for (TActorIterator<AActor> aItr(GetWorld()); aItr; ++aItr)
 	{
-		if ((aItr && aItr->GetRootComponent() && aItr->GetRootComponent()->IsSimulatingPhysics()) || Cast<ARageBaseCar>(*aItr))
+		if ((aItr && aItr->GetRootComponent() && aItr->GetRootComponent()->IsSimulatingPhysics()) )
 		{
 			float distance = GetDistanceTo(*aItr);
-		
-			//FVector::Dist(theChar->GetActorLocation(),GetActorLocation())<
-			if (distance<AffectArea && aItr && aItr->GetRootComponent() && aItr->GetRootComponent()->Mobility == EComponentMobility::Movable)
+
+			if (distance<AffectArea && aItr )
 			{
 
 				FVector dir = aItr->GetActorLocation() - Loc;
 				dir.Normalize();
+				ARageBaseCar* TheChar = Cast<ARageBaseCar>(*aItr);
 
-				float DistanceMultiplier = 1;
-
-				if (distance < InnerDamageRadius)DistanceMultiplier = 1;
-				else DistanceMultiplier = 1 - (distance - InnerDamageRadius) / (AffectArea - InnerDamageRadius);
-
-				if (Cast<ARageBaseCar>(*aItr))
+				//If Player apply damage
+				if (TheChar)
 				{
-					Cast<ARageBaseCar>(*aItr)->GetMesh()->AddImpulse(dir*RadialImpulse*DistanceMultiplier * CarImpulseMuliplier);
-					//printr(FString::FromInt(RadialImpulse*DistanceMultiplier * CarImpulseMuliplier));
+					// BP Explosion Hit Enemy
+					BP_Explode_HitEnemy(TheChar, RadialDamageCurve.GetRichCurve()->Eval(distance));
+
+					// Apply Damage to Character
+					UGameplayStatics::ApplyDamage(TheChar, RadialDamageCurve.GetRichCurve()->Eval(distance),ThePlayer->GetController(), this, ExplosionDamageType);
+
+				
+					if (TheChar && TheChar->GetActorEnableCollision())
+						TheChar->GetMesh()->AddImpulse(dir*RadialImpulseCurve.GetRichCurve()->Eval(distance),NAME_None,false);
+					//	Cast<UPrimitiveComponent>(aItr->GetRootComponent())->AddImpulse(dir*RadialImpulseCurve.GetRichCurve()->Eval(distance));
+
+					//printr("Apply explosion Dmg :  " + FString::FromInt(RadialDamageCurve.GetRichCurve()->Eval(distance)));
 				}
-				else if (aItr->GetRootComponent()->IsSimulatingPhysics() && Cast<UPrimitiveComponent>(aItr->GetRootComponent()))
+				else 
+				// Apply impulse on physics actors
+				if (aItr->GetRootComponent() && aItr->GetRootComponent()->Mobility == EComponentMobility::Movable
+					&&aItr->GetRootComponent()->IsSimulatingPhysics() && Cast<UPrimitiveComponent>(aItr->GetRootComponent()))
 				{
-					Cast<UPrimitiveComponent>(aItr->GetRootComponent())->AddImpulse(dir*RadialImpulse*DistanceMultiplier);
+						Cast<UPrimitiveComponent>(aItr->GetRootComponent())->AddImpulse(dir*RadialImpulseCurve.GetRichCurve()->Eval(distance));
 				}
 			}
 			

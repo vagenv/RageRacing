@@ -1,8 +1,11 @@
 // Copyright 2015 Vagen Ayrapetyan
 
 #include "Rage.h"
+#include "Engine.h"
+
 #include "System/RageGameInstance.h"
 #include "Vehicle/RagePlayerCar.h"
+
 //#include "Online.h"
 //#include "OnlineSubsystem.h"
 //#include "Online/OnlineSubsystem/Public/OnlineSubsystem.h"
@@ -84,7 +87,7 @@ bool URageGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UserId, FName
 
 			SessionSettings = MakeShareable(new FOnlineSessionSettings());
 
-
+		
 			SessionSettings->bIsLANMatch = bIsLAN;
 			SessionSettings->bUsesPresence = bIsPresence;
 			SessionSettings->NumPublicConnections = MaxNumPlayers;
@@ -100,8 +103,11 @@ bool URageGameInstance::HostSession(TSharedPtr<const FUniqueNetId> UserId, FName
 			// Set the delegate to the Handle of the SessionInterface
 			OnCreateSessionCompleteDelegateHandle = Sessions->AddOnCreateSessionCompleteDelegate_Handle(OnCreateSessionCompleteDelegate);
 
+			printr(SessionName.ToString());
+
 			// Our delegate should get called when this is complete (doesn't need to be successful!)
-			return Sessions->CreateSession(*UserId, "In Session Host", *SessionSettings);
+			return Sessions->CreateSession(*UserId, SessionName, *SessionSettings);
+			
 		}
 	}
 	else
@@ -138,8 +144,10 @@ void URageGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucc
 				// Set the StartSession delegate handle
 				OnStartSessionCompleteDelegateHandle = Sessions->AddOnStartSessionCompleteDelegate_Handle(OnStartSessionCompleteDelegate);
 
+				//printr(SessionName.ToString());
 				// Our StartSessionComplete delegate should get called after this
 				Sessions->StartSession(SessionName);
+				
 			}
 		}
 
@@ -183,20 +191,12 @@ void URageGameInstance::StartOnlineGame()
 	// Creating a local player where we can get the UserID from
 	ULocalPlayer* const Player = GetFirstGamePlayer();
 
-	FName ServName;
-
-	if (Cast<ARagePlayerCar>(Player))
-	{
-		ServName=*(Cast<ARagePlayerCar>(Player)->CharacterName);
-	}
-	else ServName = "Empty Name";
-	//Player->GetPreferredUniqueNetId()
-	
 	//SessionName
 	//GameSessionName
 
 	// Call our custom HostSession function. GameSessionName is a GameInstance variable
-	HostSession(Player->GetPreferredUniqueNetId(), ServName, "BloodBathMap", false, true, 16);
+	HostSession(Player->GetPreferredUniqueNetId(), *PlayerName, "BloodBathMap", false, true, 16);
+	
 	
 }
 
@@ -277,7 +277,8 @@ void URageGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 
 	bIsSearchingSession = false;
 
-	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("OFindSessionsComplete bSuccess: %d"), bWasSuccessful));
+
+	//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("OFindSessionsComplete bSuccess: %d"), bWasSuccessful));
 
 	// Get OnlineSubsystem we want to work with
 	IOnlineSubsystem* const OnlineSub = IOnlineSubsystem::Get();
@@ -289,7 +290,8 @@ void URageGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 		{
 			// Clear the Delegate handle, since we finished this call
 			Sessions->ClearOnFindSessionsCompleteDelegate_Handle(OnFindSessionsCompleteDelegateHandle);
-
+			/*
+		
 			// Just debugging the Number of Search results. Can be displayed in UMG or something later on
 		//	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("Num Search Results: %d"), SessionSearch->SearchResults.Num()));
 
@@ -298,7 +300,7 @@ void URageGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 			{
 				// "SessionSearch->SearchResults" is an Array that contains all the information. You can access the Session in this and get a lot of information.
 				// This can be customized later on with your own classes to add more information that can be set and displayed
-				printr("Number of Sessions : " + FString::FromInt(SessionSearch->SearchResults.Num())+FString("    -|"));
+				//printr("Number of Sessions : " + FString::FromInt(SessionSearch->SearchResults.Num())+FString("    -|"));
 				for (int32 SearchIdx = 0; SearchIdx < SessionSearch->SearchResults.Num(); SearchIdx++)
 				{
 				
@@ -307,8 +309,10 @@ void URageGameInstance::OnFindSessionsComplete(bool bWasSuccessful)
 				//	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, FString::Printf(TEXT("Session Number: %d | Sessionname: %s "), SearchIdx + 1, *(SessionSearch->SearchResults[SearchIdx].Session.OwningUserName)));
 				}
 			}
+			*/
 		}
 	}
+
 	UpdateSessionList();
 }
 
@@ -328,8 +332,11 @@ void URageGameInstance::UpdateSessionList()
 	if (!SessionSearch.IsValid())return;
 
 	CurrentSessionSearch.Empty();
+
+
 	for (int32 i = 0; i < SessionSearch->SearchResults.Num(); i++)
 	{
+		printr(SessionSearch->SearchResults[i].Session.OwningUserName);
 		FAvaiableSessionsData NewData(SessionSearch->SearchResults[i]);
 		CurrentSessionSearch.Add(NewData);
 	}

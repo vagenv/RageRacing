@@ -35,6 +35,10 @@ public:
 
 	//      Fire Props
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+		TSubclassOf<UDamageType> DamageType;
+
 	// Use Ammo on Fire
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 		bool bUseAmmo = true;

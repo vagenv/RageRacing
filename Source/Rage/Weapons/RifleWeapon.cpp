@@ -48,7 +48,7 @@ void ARifleWeapon::Fire()
 				//EnemyCar->TakeDamage(FireDamage, FDamageEvent(), NULL, this);
 				//EnemyCar->ApplyDamageMomentum(WeaponData.FireDamage, FDamageEvent(), NULL,NULL);
 				// Apply Damage
-				UGameplayStatics::ApplyDamage(EnemyCar, WeaponData.FireDamage, ThePlayer->Controller, Cast<AActor>(this), UDamageType::StaticClass());
+				UGameplayStatics::ApplyDamage(EnemyCar, WeaponData.FireDamage, ThePlayer->Controller, Cast<AActor>(this), DamageType);
 
 			}
 			//	else printr("Bad Cast");

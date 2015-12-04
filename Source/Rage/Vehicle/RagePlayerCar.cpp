@@ -15,6 +15,7 @@
 #include "UnrealNetwork.h"
 #include "System/RageGameState.h"
 #include "System/RagePlayerState.h"
+#include "System/RageDamageType.h"
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -120,7 +121,10 @@ void ARagePlayerCar::BeginPlay()
 	}
 
 	// Start Energy Restore
-	StartEneryRestore();
+	StartBoostEnergyRestore();
+
+	// Start Shield Energy Restore
+	StartShieldEnergyRestore();
 
 }
 
@@ -179,39 +183,257 @@ void ARagePlayerCar::SetPlayerStats_Implementation(const FString & newPlayerName
 	AdditonalColorProperties = newAdditonalColorProperties;
 }
 
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//								Energy Control
+//								Shield Energy Control
 
 // Start Energy Restore
-void ARagePlayerCar::StartEneryRestore(){
-	GetWorldTimerManager().SetTimer(EnergyRestoreHandle, this, &ARagePlayerCar::Energy_Restore, TheEnergyData.RestoreSpeed, true);
+void ARagePlayerCar::StartShieldEnergyRestore()
+{
+	// Only On Server
+	if (Role < ROLE_Authority)return;
+
+	GetWorldTimerManager().SetTimer(ShieldEnergyRestoreHandle, this, &ARagePlayerCar::ShieldEnergy_Restore, TheShieldEnergyData.RestoreSpeed, true);
+
+	// Clear timer to start restore
+	if (GetWorldTimerManager().IsTimerActive(ShieldEnergyRestoreStartDelayHandle))
+	{
+		GetWorldTimerManager().ClearTimer(ShieldEnergyRestoreStartDelayHandle);
+	}
 }
 
 // Stop Energy Restore
-void ARagePlayerCar::StopEneryRestore(){
-	if (GetWorldTimerManager().IsTimerActive(EnergyRestoreHandle))
-		GetWorldTimerManager().ClearTimer(EnergyRestoreHandle);
+void ARagePlayerCar::StopShieldEnergyRestore()
+{
+	// Only On Server
+	if (Role < ROLE_Authority)return;
+
+	if (GetWorldTimerManager().IsTimerActive(ShieldEnergyRestoreHandle))
+		GetWorldTimerManager().ClearTimer(ShieldEnergyRestoreHandle);
+
+	// Clear Timer to start restore
+	if (GetWorldTimerManager().IsTimerActive(ShieldEnergyRestoreStartDelayHandle))
+	{
+		GetWorldTimerManager().ClearTimer(ShieldEnergyRestoreStartDelayHandle);
+	}
+
+	// Start delay from zero again.
+	GetWorldTimerManager().SetTimer(ShieldEnergyRestoreStartDelayHandle, this, &ARagePlayerCar::StartShieldEnergyRestore, TheShieldEnergyData.TimeBeforeEnergyRestoreRestart, false);
+
 }
 
 // Automatic Energy Restore
-void ARagePlayerCar::Energy_Restore(){
-	TheEnergyData.RestoreEnergy();
+void ARagePlayerCar::ShieldEnergy_Restore()
+{
+	// Only On Server
+	if (Role < ROLE_Authority)return;
+
+	if (TheShieldEnergyData.CurrentValue < TheShieldEnergyData.MaxValue)
+	{
+		if (TheShieldEnergyData.CurrentValue + TheShieldEnergyData.RestoreValue <= TheShieldEnergyData.MaxValue)
+		{
+			TheShieldEnergyData.CurrentValue += TheShieldEnergyData.RestoreValue;
+		}
+		else TheShieldEnergyData.CurrentValue = TheShieldEnergyData.MaxValue;
+
+		BP_ShieldEnergyValueUpdated();
+	}
+	
+}
+
+
+// Take Damage override
+void ARagePlayerCar::ShieldAbsorbDamage(float& DamageAmount, struct FDamageEvent const& DamageEvent)
+{
+	StopShieldEnergyRestore();
+
+
+	if (TheShieldEnergyData.CurrentValue <= 0)return;
+
+	// Total Dmg absorbed from dmg
+	float TotalAbsorbValue = 0;
+
+	URageDamageType* RageDmg = DamageEvent.DamageTypeClass->GetDefaultObject<URageDamageType>();
+
+	// Total Penetration Dmg
+	float PenetrationDmg = 0;
+
+
+	// Rage Dmg
+	if (RageDmg)
+	{
+
+		PenetrationDmg = DamageAmount*RageDmg->Damage_ShieldPenetrationMultiplier;
+		// Total Dmg to shield
+		float ShieldTotalDmg = DamageAmount*RageDmg->Damage_ShieldDamageMultiplier-PenetrationDmg;
+
+		// Shield can absorb that dmg
+		if (TheShieldEnergyData.CurrentValue > ShieldTotalDmg)
+		{
+			//printg("everything Absorbed");
+
+			// Take out Shield energy
+			TheShieldEnergyData.CurrentValue -= ShieldTotalDmg;
+
+			// Absorbed everthing
+			TotalAbsorbValue = DamageAmount;
+		}
+		// Shield Can't absorb everything
+		else
+		{
+
+			//printg("Part Absorbed");
+			// Take out the damage that shield can absorb
+			ShieldTotalDmg -= TheShieldEnergyData.CurrentValue;
+
+			// Caculate absorb value
+			TotalAbsorbValue = (ShieldTotalDmg / RageDmg->Damage_ShieldDamageMultiplier);
+			PenetrationDmg = 0;
+
+			// Set shield energy
+			TheShieldEnergyData.CurrentValue = 0;
+
+		}
+	}
+	// Not Rage Dmg
+	else 
+	{
+		// Shield can absorb that dmg
+		if (TheShieldEnergyData.CurrentValue > DamageAmount)
+		{
+			// Take From Shield
+			TheShieldEnergyData.CurrentValue -= DamageAmount;
+
+			// Absorbed All Dmg
+			TotalAbsorbValue = DamageAmount;
+		}
+		// Shield Can't absorb everything
+		else
+		{
+			// Absorb Shield value from dmg
+			TotalAbsorbValue = TheShieldEnergyData.CurrentValue;
+
+			// Absorb all Shield Energy
+			TheShieldEnergyData.CurrentValue = 0;
+		}
+	}
+
+
+
+	//  Original Damage -  Absorbed Value +  Penetrated Damage
+	DamageAmount = DamageAmount- TotalAbsorbValue + PenetrationDmg;
+	
+	/*
+	printb("Damage After Amount :  " + FString::FromInt(DamageAmount));
+
+	printr("Absorb Amount :  " + FString::FromInt(TotalAbsorbValue));
+
+	printr("Penetratio Amount :  " + FString::FromInt(PenetrationDmg));
+
+	printr("Armor Amount :  " + FString::FromInt(TheShieldEnergyData.CurrentValue));
+	*/
+
+	BP_ShieldEnergyValueUpdated();
+}
+
+
+
+
+// Use Specific energy value
+void ARagePlayerCar::UseShieldEnergy(float Value)
+{
+	TheShieldEnergyData.CurrentValue -= Value;
+
+	if (TheShieldEnergyData.CurrentValue < 0)TheShieldEnergyData.CurrentValue = 0;
+
+	
+}
+
+// Get Current Energy Percent
+float ARagePlayerCar::GetShieldEnergyPercent()
+{
+	if (TheShieldEnergyData.CurrentValue > 0 && TheShieldEnergyData.MaxValue>0)
+	{
+		return TheShieldEnergyData.CurrentValue / TheShieldEnergyData.MaxValue;
+	}
+	return 0;
+}
+
+// Client Shield Energy Updated
+void ARagePlayerCar::OnRep_ShieldEnergyReplicated()
+{
+	BP_ShieldEnergyValueUpdated();
+}
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//								Boost Energy Control
+
+// Start Energy Restore
+void ARagePlayerCar::StartBoostEnergyRestore(){
+	GetWorldTimerManager().SetTimer(BoostEnergyRestoreHandle, this, &ARagePlayerCar::BoostEnergy_Restore, TheBoostEnergyData.RestoreSpeed, true);
+}
+
+// Stop Energy Restore
+void ARagePlayerCar::StopBoostEnergyRestore(){
+	if (GetWorldTimerManager().IsTimerActive(BoostEnergyRestoreHandle))
+		GetWorldTimerManager().ClearTimer(BoostEnergyRestoreHandle);
+}
+
+// Automatic Energy Restore
+void ARagePlayerCar::BoostEnergy_Restore(){
+	TheBoostEnergyData.RestoreEnergy();
 }
 
 
 // Use all energy Value
-void ARagePlayerCar::UseAllEnergy()
+void ARagePlayerCar::UseAllBoostEnergy()
 {
-	TheEnergyData.UseAllEnergy();
+	TheBoostEnergyData.UseAllEnergy();
 }
 
 // Use Specific energy value
-void ARagePlayerCar::UseEnergy(float Value)
+void ARagePlayerCar::UseBoostEnergy(float Value)
 {
-	TheEnergyData.UseEnergy(Value);
+	TheBoostEnergyData.UseEnergy(Value);
+}
+
+
+// Get Current Energy Percent
+float ARagePlayerCar::GetBoostEnergyPercent()
+{
+	if (TheBoostEnergyData.CurrentValue >= 0 && TheBoostEnergyData.MaxValue>0)
+	{
+		return TheBoostEnergyData.CurrentValue / TheBoostEnergyData.MaxValue;
+	}
+	return 0;
+}
+
+// Check if can boos
+bool ARagePlayerCar::CanBoost()
+{
+	//if (!VehicleMovement->IsMovingOnGround())return false;
+	if (!TheBoostEnergyData.CanBoost()) return false;
+
+	return true;
+}
+
+// Check if can boost Jump
+bool ARagePlayerCar::CanJump()
+{
+	//if (!VehicleMovement->IsMovingOnGround())return false;
+	if (!TheBoostEnergyData.CanJump())return false;
+	return true;
+}
+
+// Client Boost Energy Updated
+void ARagePlayerCar::OnRep_BoostEnergyReplicated()
+{
+
 }
 
 
@@ -485,7 +707,7 @@ void ARagePlayerCar::InventoryUpdated()
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//								Components Events and Functions
+//								Camera	 Component
 
 // Toggle Current Camera
 void ARagePlayerCar::OnToggleCamera()
@@ -510,6 +732,38 @@ void ARagePlayerCar::OnToggleCamera()
 	}
 
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//								Death Revive and DMG
+
+
+
+
+// Take Damage override
+float ARagePlayerCar::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+
+	printr("Before Absorb " + FString::SanitizeFloat(DamageAmount));
+
+
+	// Absorb the dmg from shield
+	ShieldAbsorbDamage(DamageAmount, DamageEvent);
+
+	printg("After Absorb " + FString::SanitizeFloat(DamageAmount));
+
+	//print("");
+
+	// Get Vehicle Dmg Multiplier
+	URageDamageType* RageDmg = DamageEvent.DamageTypeClass->GetDefaultObject<URageDamageType>();
+	if (RageDmg){
+		DamageAmount *= RageDmg->Damage_VehicleDamageMultiplier;
+	}
+
+	return Super::TakeDamage(DamageAmount,DamageEvent,EventInstigator,DamageCauser);
+};
+
 
 // Player Died
 void ARagePlayerCar::Death()
@@ -565,32 +819,7 @@ bool ARagePlayerCar::CanShoot()
 	return true;
 }
 
-// Get Current Energy Percent
-float ARagePlayerCar::GetEnergyPercent()
-{
-	if (TheEnergyData.CurrentValue >= 0 && TheEnergyData.MaxValue>0)
-	{
-		return TheEnergyData.CurrentValue / TheEnergyData.MaxValue;
-	}
-	return 0;
-}
 
-// Check if can boos
-bool ARagePlayerCar::CanBoost()
-{
-	//if (!VehicleMovement->IsMovingOnGround())return false;
-	if (!TheEnergyData.CanBoost()) return false;
-
-	return true;
-}
-
-// Check if can boost Jump
-bool ARagePlayerCar::CanJump()
-{
-	//if (!VehicleMovement->IsMovingOnGround())return false;
-	if (!TheEnergyData.CanJump())return false;
-	return true;
-}
 
 // Check if car is turned over
 bool ARagePlayerCar::IsTurnedOver()
@@ -770,16 +999,16 @@ void ARagePlayerCar::DoubleJump()
 	FVector TheJumpImpulse = GetActorUpVector();// FVector(0); //GetVelocity();
 
 	// Set Vertical Impulse Value
-	TheJumpImpulse.Z *= TheEnergyData.CurrentValue *TheEnergyData.JumpMultiplier*TheEnergyData.JumpDirection.Y;
+	TheJumpImpulse.Z *= TheBoostEnergyData.CurrentValue *TheBoostEnergyData.JumpMultiplier*TheBoostEnergyData.JumpDirection.Y;
 
 	// Set Forward Impulse Value
-	TheJumpImpulse += GetActorForwardVector()*TheEnergyData.CurrentValue*TheEnergyData.JumpMultiplier*TheEnergyData.JumpDirection.X;
+	TheJumpImpulse += GetActorForwardVector()*TheBoostEnergyData.CurrentValue*TheBoostEnergyData.JumpMultiplier*TheBoostEnergyData.JumpDirection.X;
 
 	// Add The Impulse
 	GetMesh()->AddImpulse(TheJumpImpulse, NAME_None, true);
 
 	// Use Energy
-	UseAllEnergy();
+	UseAllBoostEnergy();
 }
 
 // Reset Car event 
@@ -808,7 +1037,8 @@ void ARagePlayerCar::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & Ou
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ARagePlayerCar, TheEnergyData);
+	DOREPLIFETIME(ARagePlayerCar, TheBoostEnergyData);
+	DOREPLIFETIME(ARagePlayerCar, TheShieldEnergyData);
 	DOREPLIFETIME(ARagePlayerCar, TheInventory);
 	DOREPLIFETIME(ARagePlayerCar, AdditonalColorProperties);
 }

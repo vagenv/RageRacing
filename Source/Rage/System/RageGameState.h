@@ -34,20 +34,8 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "")
 		FSimpleEventDelegate ChatUpdateDelegate;
 
-
-
-
-
 	void AddNewChatMessage(FString TheMessage, class ARagePlayerCar* ThePlayer);
 
-
-
-	UPROPERTY(ReplicatedUsing = OnRep_PlayersListUpdated, EditAnywhere, BlueprintReadOnly, Category = " ")
-		TArray<FRageOninePlayerData> ThePlayers;
-	UFUNCTION()
-		void OnRep_PlayersListUpdated();
-	UPROPERTY(BlueprintAssignable, Category = "")
-		FSimpleEventDelegate PlayerUpdateDelegate;
 
 
 
