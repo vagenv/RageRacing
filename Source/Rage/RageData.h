@@ -1,4 +1,4 @@
-// Copyright 2015 Vagen Ayrapetyan
+// Copyright 2015-2016 Vagen Ayrapetyan
 
 #pragma once
 
@@ -45,7 +45,7 @@ public:
 
 ////////////////////////        Online Message Type
 USTRUCT(BlueprintType)
-struct FRageOnineMessageData
+struct FRageOnlineMessageData
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -62,8 +62,8 @@ struct FRageOnineMessageData
 		FLinearColor MessageColor;
 
 
-	FRageOnineMessageData(){};
-	FRageOnineMessageData(FString NewMessage, class ARagePlayerCar* ThePlayer);
+	FRageOnlineMessageData(){};
+	FRageOnlineMessageData(FString NewMessage, class ARagePlayerCar * ThePlayer);
 
 
 };

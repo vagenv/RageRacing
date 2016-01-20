@@ -18,3 +18,4 @@ Releases
 *.log
 *.target.xml
 
+/Rage.VC.opendb

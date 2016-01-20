@@ -1,4 +1,4 @@
-// Copyright 2015 Vagen Ayrapetyan
+// Copyright 2015-2016 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "Engine.h"
@@ -25,7 +25,7 @@ void ARageGameState::OnRep_MessagesList()
 // Called on server to add new message
 void ARageGameState::AddNewChatMessage(FString  TheMessage, class ARagePlayerCar* ThePlayer)
 {
-	TheMessages.Add(FRageOnineMessageData(TheMessage, ThePlayer));
+	TheMessages.Add(FRageOnlineMessageData(TheMessage, ThePlayer));
 
 
 	// Update HUD on server

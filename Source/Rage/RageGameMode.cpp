@@ -1,12 +1,7 @@
-// Copyright 2015 Vagen Ayrapetyan
-
+// Copyright 2015-2016 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "RageGameMode.h"
-/*
-#include "Vehicle/RageBaseCar.h"
-#include "RageHUD.h"
-*/
 #include "System/SystemSaveGame.h"
 #include "System/RagePlayerState.h"
 #include "System/RageGameState.h"

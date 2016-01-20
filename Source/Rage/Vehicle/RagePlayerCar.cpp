@@ -1,4 +1,4 @@
-// Copyright 2015 Vagen Ayrapetyan
+// Copyright 2015-2016 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "Engine.h"
@@ -85,7 +85,7 @@ ARagePlayerCar::ARagePlayerCar()
 void ARagePlayerCar::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	bThirdPersonCamera = true;
 	if (Role>=ROLE_Authority)
 	{
 		if (!TheInventory)
@@ -716,7 +716,7 @@ void ARagePlayerCar::OnToggleCamera()
 	{
 		InternalCamera->Deactivate();
 		Camera->Activate();
-
+		bThirdPersonCamera = false;
 		/*
 		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 		if ((PlayerController != nullptr) && (PlayerController->PlayerCameraManager != nullptr))
@@ -727,6 +727,7 @@ void ARagePlayerCar::OnToggleCamera()
 	}
 	else
 	{
+		bThirdPersonCamera = true;
 		Camera->Deactivate();
 		InternalCamera->Activate();
 	}

@@ -1,4 +1,4 @@
-// Copyright 2015 Vagen Ayrapetyan
+// Copyright 2015-2016 Vagen Ayrapetyan
 
 #include "Rage.h"
 #include "ItemPickup.h"

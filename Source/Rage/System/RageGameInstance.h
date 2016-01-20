@@ -1,4 +1,4 @@
-// Copyright 2015 Vagen Ayrapetyan
+// Copyright 2015-2016 Vagen Ayrapetyan
 
 #pragma once
 
@@ -18,7 +18,6 @@ class RAGE_API URageGameInstance : public UGameInstance
 
 public:
 
-
 	// Constuctor
 
 	URageGameInstance(const FObjectInitializer& ObjectInitializer);
@@ -28,24 +27,32 @@ public:
 	/////					Callable Events and Functions
 
 
-	UFUNCTION(BlueprintCallable, Category = "Network|Test")
+	// Host Default  Online Map Session
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
 		void StartOnlineGame();
-	UFUNCTION(BlueprintCallable, Category = "Network|Test")
-		void StartOnlineGameMap(FString MapName=TEXT("BloodBathMap"),int32 MaxPlayerNumber=16);
 
-	UFUNCTION(BlueprintCallable, Category = "Network|Test")
+	// Host Specific Online Map Session
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
+		void StartOnlineGameMap(FString MapName = TEXT("BattleArena"), int32 MaxPlayerNumber = 16);
+
+	// Find all avaiable Online Sessions
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
 		void FindOnlineGames();
 
-	UFUNCTION(BlueprintCallable, Category = "Network|Test")
+	// Update Avaiable Online Sessions
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
 		void UpdateSessionList();
-	UFUNCTION(BlueprintCallable, Category = "Network|Test")
+
+	// Join Any Online Session
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
 		void JoinOnlineGame();
 
-	UFUNCTION(BlueprintCallable, Category = "Network|Test")
+	// Join Specific Online Session
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
 		void JoinSelectedOnlineGame(FAvaiableSessionsData SessionData);
-	// TEST BP FUNCTION
 
-	UFUNCTION(BlueprintCallable, Category = "Network|Test")
+	// Stop Session and Quit Game
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
 		void DestroySessionAndLeaveGame();
 
 
@@ -54,26 +61,32 @@ public:
 	/////					Data about the Sessions and Game Instance
 
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+	// Current Online Sessions Search Result
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rage|Network")
 		TArray<FAvaiableSessionsData> CurrentSessionSearch;
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "")
+	// Is Currently Searching Sessions?
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Rage|Network")
 		bool bIsSearchingSession = false;
 
+	// Local Player Name
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rage|Network")
+		FString PlayerName = "Empty Name";
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		FString PlayerName="Empty Name";
+	// Local Player Color
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rage|Network")
+		FLinearColor PlayerColor = FLinearColor::White;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
-		FLinearColor PlayerColor=FLinearColor::White;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "")
+	// Local Player Material Settings
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rage|Network")
 		FVector PlayerMaterialSettings = FVector(0);
 
+	//  Start Sessions Selected Map Name
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rage|Network")
+		FString TheMapName = "BattleArena";
 
-	UFUNCTION(BlueprintCallable, Category = "System")
+	// Set Local Player Stats
+	UFUNCTION(BlueprintCallable, Category = "Rage|Network")
 		void SetPlayerStats(FString newPlayerName, FLinearColor newPlayerColor, FVector newMaterialSettings);
 
 
@@ -83,7 +96,6 @@ public:
 
 
 	//	Variable Part for FINDING a Session
-
 	TSharedPtr<class FOnlineSessionSearch> SessionSearch;
 
 	// Session Setting
@@ -105,7 +117,7 @@ public:
 	FDelegateHandle OnCreateSessionCompleteDelegateHandle;
 	FDelegateHandle OnStartSessionCompleteDelegateHandle;
 
-	
+
 	// Delegate for searching for sessions 
 	FOnFindSessionsCompleteDelegate OnFindSessionsCompleteDelegate;
 
@@ -113,7 +125,7 @@ public:
 	FDelegateHandle OnFindSessionsCompleteDelegateHandle;
 
 	//	Variable Part for JOINING a Session
-	
+
 
 	// Delegate after joining a session 
 	FOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate;
@@ -170,7 +182,7 @@ public:
 	*/
 	void OnStartOnlineGameComplete(FName SessionName, bool bWasSuccessful);
 
-	
+
 
 	//			Find Sessions
 	/**
@@ -192,7 +204,7 @@ public:
 	*/
 	void OnFindSessionsComplete(bool bWasSuccessful);
 
-	
+
 
 
 	//				Join Session
@@ -231,6 +243,7 @@ public:
 	*	@param bWasSuccessful true if the async action completed without error, false if there was an error
 	*/
 	virtual void OnDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+
 
 
 	

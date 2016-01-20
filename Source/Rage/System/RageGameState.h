@@ -1,4 +1,4 @@
-// Copyright 2015 Vagen Ayrapetyan
+// Copyright 2015-2016 Vagen Ayrapetyan
 
 #pragma once
 
@@ -26,7 +26,7 @@ public:
 
 
 	UPROPERTY(ReplicatedUsing = OnRep_MessagesList, EditAnywhere, BlueprintReadOnly, Category = " ")
-	TArray<FRageOnineMessageData> TheMessages;
+	TArray<FRageOnlineMessageData> TheMessages;
 
 	UFUNCTION()
 		void OnRep_MessagesList();
@@ -35,11 +35,6 @@ public:
 		FSimpleEventDelegate ChatUpdateDelegate;
 
 	void AddNewChatMessage(FString TheMessage, class ARagePlayerCar* ThePlayer);
-
-
-
-
-	void UpdatePlayerStats();
 
 
 };
