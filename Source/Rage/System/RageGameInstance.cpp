@@ -33,6 +33,22 @@ void URageGameInstance::SetPlayerStats(FString newPlayerName, FLinearColor newPl
 	PlayerName = newPlayerName;
 	PlayerColor = newPlayerColor;
 	PlayerMaterialSettings = newMaterialSettings;
+
+	/*
+	IOnlineSubsystem* OnlineSub = IOnlineSubsystem::Get();
+	if (OnlineSub)
+	{
+		//OnlineSub->
+	}
+
+	bool canBind = false;
+	TSharedRef<FInternetAddr> localIp = ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->GetLocalHostAddr(*GLog, canBind);
+	if (localIp->IsValid())
+	{
+		//GLog->Log(localIp->ToString(false)); // if you want to append the port (true) or not (false).
+	}
+	*/
+	
 }
 
 // Host Default Map
